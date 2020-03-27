@@ -4,4 +4,3 @@ package net.forkk.greenstone
 fun init() {
     println("Hello Fabric world!")
 }
-

@@ -1,7 +1,8 @@
 plugins {
-    id 'fabric-loom'
-    id 'maven-publish'
+    id "fabric-loom"
+    id "maven-publish"
     id "org.jetbrains.kotlin.jvm"
+    id "org.jmailen.kotlinter" version "2.3.2"
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
