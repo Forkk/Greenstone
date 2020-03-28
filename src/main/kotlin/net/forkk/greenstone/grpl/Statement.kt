@@ -32,8 +32,13 @@ data class StoreVarStmt(val name: String) : Statement() {
 }
 
 /** Executes a built-in command */
-data class CommandStmt(val cmd: Command) : Statement() {
+data class CommandStmt(val cmdname: String) : Statement() {
     override fun exec(ctx: Context) {
-        cmd.exec(ctx)
+        val cmd = ctx.commands.get(cmdname)
+        if (cmd == null) {
+            throw UnknownCommandError(cmdname)
+        } else {
+            cmd.exec(ctx)
+        }
     }
 }

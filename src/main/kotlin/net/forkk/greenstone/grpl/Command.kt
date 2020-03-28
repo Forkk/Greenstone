@@ -6,6 +6,10 @@ package net.forkk.greenstone.grpl
 class CommandSet {
     private var map = hashMapOf<String, Command>()
 
+    fun get(name: String): Command? {
+        return map[name]
+    }
+
     fun addCommands(vararg cmds: Command) {
         cmds.forEach { c ->
             this.map[c.name] = c
@@ -18,12 +22,12 @@ class CommandSet {
  *
  * Theoretically we could allow other mods to extend this later.
  */
-val baseCmds = {
-    var cmdSet = CommandSet()
+val baseCmds: CommandSet = {
+    val cmdSet = CommandSet()
     cmdSet.addCommands(PopCmd, DupCmd, SwapCmd)
     cmdSet.addCommands(AddCmd, SubCmd, MulCmd, DivCmd, IDivCmd)
     cmdSet
-}
+}()
 
 /**
  * Represents a built-in command in the GRPL language.
@@ -76,7 +80,6 @@ object AddCmd : Command("add") {
     override val help: String
         get() = "Adds top two numbers on the stack. Raises type error if values are not numbers."
 }
-
 object SubCmd : Command("sub") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
@@ -89,7 +92,6 @@ object SubCmd : Command("sub") {
         get() = "Subtracts numbers on the stack. For example, if the stack is `a b` (a pushed first), this pushes a - b. " +
                 "Raises type error if the values are not numbers."
 }
-
 object MulCmd : Command("mul") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
@@ -101,7 +103,6 @@ object MulCmd : Command("mul") {
     override val help: String
         get() = "Multiplies numbers on the stack. Raises type error if the values are not numbers."
 }
-
 object DivCmd : Command("div") {
     override fun exec(ctx: Context) {
         val b = ctx.stack.pop().asFloatOrErr()
@@ -114,7 +115,6 @@ object DivCmd : Command("div") {
                 "Ordering is the same as subtraction, so if the stack is `a b` (a pushed first), this pushes a / b. " +
                 "Raises type error if the values are not numbers."
 }
-
 object IDivCmd : Command("idiv") {
     override fun exec(ctx: Context) {
         val b = ctx.stack.pop().asIntOrErr()

@@ -17,6 +17,7 @@ minecraft {
 
 
 repositories {
+    maven { setUrl("https://dl.bintray.com/hotkeytlt/maven") }
     maven { url = "http://maven.fabricmc.net/" }
 }
 
@@ -31,8 +32,10 @@ dependencies {
 
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
-    // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
-    // You may need to force-disable transitiveness on them.
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+
+    compile 'com.github.h0tk3y.betterParse:better-parse-jvm:0.4.0-alpha-3'
 }
 
 processResources {
