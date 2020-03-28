@@ -22,6 +22,10 @@ class TestParser {
         assertParsesTo("<foo", listOf(LoadVarStmt("foo")))
     }
 
+    @Test fun `test parsing boolean literals`() {
+        assertParsesTo("true false", listOf(LitStmt(BoolVal(true)), LitStmt(BoolVal(false))))
+    }
+
     @Test fun `test parsing int literal`() {
         assertParsesTo("42", listOf(LitStmt(IntVal(42))))
     }

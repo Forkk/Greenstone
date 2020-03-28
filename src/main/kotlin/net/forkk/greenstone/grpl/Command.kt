@@ -25,6 +25,7 @@ class CommandSet {
 val baseCmds: CommandSet = {
     val cmdSet = CommandSet()
     cmdSet.addCommands(PopCmd, DupCmd, SwapCmd)
+    cmdSet.addCommands(NotCmd, AndCmd, OrCmd)
     cmdSet.addCommands(AddCmd, SubCmd, MulCmd, DivCmd, IDivCmd)
     cmdSet
 }()
@@ -67,6 +68,36 @@ object SwapCmd : Command("swap") {
 
     override val help: String
         get() = "Swaps the two items at the top of the stack."
+}
+
+object NotCmd : Command("not") {
+    override fun exec(ctx: Context) {
+        val a = ctx.stack.pop().asBoolOrErr()
+        ctx.stack.push(BoolVal(!a))
+    }
+
+    override val help: String
+        get() = "Pops the boolean value on the top of the stack and pushes the opposite."
+}
+object AndCmd : Command("and") {
+    override fun exec(ctx: Context) {
+        val a = ctx.stack.pop().asBoolOrErr()
+        val b = ctx.stack.pop().asBoolOrErr()
+        ctx.stack.push(BoolVal(a && b))
+    }
+
+    override val help: String
+        get() = "Pops two values and pushes true if both are true, otherwise pushes false."
+}
+object OrCmd : Command("or") {
+    override fun exec(ctx: Context) {
+        val a = ctx.stack.pop().asBoolOrErr()
+        val b = ctx.stack.pop().asBoolOrErr()
+        ctx.stack.push(BoolVal(a || b))
+    }
+
+    override val help: String
+        get() = "Pops two values and pushes false if both are false, otherwise pushes true."
 }
 
 object AddCmd : Command("add") {

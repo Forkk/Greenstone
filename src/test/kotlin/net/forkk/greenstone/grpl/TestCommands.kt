@@ -22,6 +22,38 @@ class TestCommands : InterpreterTest() {
     }
 }
 
+class TestBoolCommands : InterpreterTest() {
+    @Test fun `test not command`() {
+        val ctx1 = runProgram("true not")
+        assertEquals(BoolVal(false), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("false not")
+        assertEquals(BoolVal(true), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test and command`() {
+        val ctx1 = runProgram("true false and")
+        assertEquals(BoolVal(false), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("true true and")
+        assertEquals(BoolVal(true), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test or command`() {
+        val ctx1 = runProgram("true false or")
+        assertEquals(BoolVal(true), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("false false or")
+        assertEquals(BoolVal(false), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+}
+
 class TestMathCommands : InterpreterTest() {
     @Test fun `test add command`() {
         val ctx = runProgram("42 27 add")
