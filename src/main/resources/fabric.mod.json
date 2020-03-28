@@ -1,31 +1,31 @@
 {
-  "schemaVersion": 1,
-  "id": "greenstone",
-  "version": "${version}",
-
-  "name": "Greenstone Circuits",
-  "description": "A computer mod with peripherals and a communication bus.",
-  "authors": [
-  ],
-
-  "license": "ARR",
-  "icon": "assets/greenstone/icon.png",
-
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "net.forkk.greenstone.GreenstoneModKt::init"
-    ]
-  },
-  "mixins": [
-  ],
-  "depends": {
-    "fabricloader": ">=0.7.1",
-    "fabric": "*",
-    "fabric-language-kotlin": "*",
-    "minecraft": "1.15.x"
-  },
-  "suggests": {
-    "flamingo": "*"
-  }
+    "schemaVersion": 1,
+    "id": "greenstone",
+    "version": "${version}",
+    "name": "Greenstone Circuits",
+    "description": "A computer mod with peripherals and a communication bus.",
+    "authors": [
+    ],
+    "license": "ARR",
+    "icon": "assets/greenstone/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            {
+                "adapter": "kotlin",
+                "value": "net.forkk.greenstone.Greenstone"
+            }
+        ]
+    },
+    "mixins": [
+    ],
+    "depends": {
+        "fabricloader": ">=0.7.1",
+        "fabric": "*",
+        "fabric-language-kotlin": "*",
+        "minecraft": "1.15.x"
+    },
+    "suggests": {
+        "flamingo": "*"
+    }
 }

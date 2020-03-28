@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=north": { "model": "greenstone:block/computer" },
+        "facing=south": { "model": "greenstone:block/computer", "y": 180 },
+        "facing=west":  { "model": "greenstone:block/computer", "y": 270 },
+        "facing=east":  { "model": "greenstone:block/computer", "y": 90 }
+    }
+}
