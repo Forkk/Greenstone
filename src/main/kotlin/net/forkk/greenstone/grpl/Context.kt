@@ -75,4 +75,7 @@ class Stack {
 
     /** Clears all elements in the stack */
     fun clear() { _stack.clear() }
+
+    /** Number of elements on the stack */
+    val size get() = _stack.size
 }

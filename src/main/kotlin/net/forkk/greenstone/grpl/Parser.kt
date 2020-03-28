@@ -1,8 +1,6 @@
 package net.forkk.greenstone.grpl
 
-import com.github.h0tk3y.betterParse.combinators.map
-import com.github.h0tk3y.betterParse.combinators.oneOrMore
-import com.github.h0tk3y.betterParse.combinators.or
+import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.parser.Parser
@@ -14,6 +12,7 @@ object GRPLGrammar : Grammar<List<Statement>>() {
     private val loadVar by token("<[^ ]+")
     private val storeVar by token(">[^ ]+")
     private val command by token("[a-zA-Z_-][a-zA-Z0-9_-]*")
+    private val whitespace by token("[ \n\r]+", ignore=true)
 
     private val floatLitStmt by floatLit map { LitStmt(FloatVal(it.text.toDouble())) }
     private val intLitStmt by intLit map { LitStmt(IntVal(it.text.toInt())) }
@@ -25,7 +24,7 @@ object GRPLGrammar : Grammar<List<Statement>>() {
     private val commandStmt by command map { CommandStmt(it.text) }
 
     private val stmtParser by intLitStmt or floatLitStmt or strLitStmt or storeStmt or loadStmt or commandStmt
-    private val stmtList by oneOrMore(stmtParser)
+    private val stmtList by separatedTerms(stmtParser, whitespace)
 
     override val rootParser: Parser<List<Statement>> by stmtList
 }

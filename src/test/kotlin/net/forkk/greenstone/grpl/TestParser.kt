@@ -37,4 +37,17 @@ class TestParser {
     @Test fun `test parsing negative float literal`() {
         assertParsesTo("-42.0", listOf(LitStmt(FloatVal(-42.0))))
     }
+
+    @Test fun `test parsing a sequence of statements`() {
+        assertParsesTo("42 >foo", listOf(LitStmt(IntVal(42)), StoreVarStmt("foo")))
+    }
+
+    @Test fun `test parsing a longer sequence of statements`() {
+        assertParsesTo("42 >foo <foo 2 mul >foo",
+            listOf(
+                LitStmt(IntVal(42)), StoreVarStmt("foo"),
+                LoadVarStmt("foo"), LitStmt(IntVal(2)), CommandStmt("mul"),
+                StoreVarStmt("foo")
+            ))
+    }
 }
