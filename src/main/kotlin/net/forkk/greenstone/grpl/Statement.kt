@@ -82,12 +82,31 @@ data class IfStmt(val conds: List<IfCondition>, val else_: List<Statement>?) : S
  * A while loop statement. Executes `body` repeatedly as long as executing `cond` continues to push true on the stack.
  */
 data class WhileStmt(val cond: List<Statement>, val body: List<Statement>) : Statement() {
-    override fun exec(ctx: net.forkk.greenstone.grpl.Context) {
+    override fun exec(ctx: Context) {
         while (true) {
             ctx.exec(cond)
             if (ctx.stack.pop().asBoolOrErr()) {
                 ctx.exec(body)
             } else { break }
         }
+    }
+}
+
+/**
+ * A function literal. This is basically a lambda.
+ */
+data class FunStmt(val body: List<Statement>) : Statement() {
+    override fun exec(ctx: Context) {
+        ctx.stack.push(FunVal(body))
+    }
+}
+
+/**
+ * A call to a function. If the "name" is empty, this calls the function value on top of the stack. If "name"
+ * is a function name, calls the function stored in that variable name.
+ */
+data class CallStmt(val name: String) : Statement() {
+    override fun exec(ctx: Context) {
+        ctx.exec(ctx.stack.pop().asFun())
     }
 }

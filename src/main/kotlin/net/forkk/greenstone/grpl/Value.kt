@@ -49,7 +49,7 @@ fun floatIntCmpOp(
 enum class ValueType {
     INT, FLOAT,
     STRING, LIST,
-    BOOL,
+    BOOL, FUN,
     TYPE, NULL;
 }
 
@@ -89,6 +89,11 @@ sealed class Value(val type: ValueType) {
         if (v == null) { throw TypeError(this, ValueType.BOOL) } else { return v }
     }
 
+    /** Casts this as a function body. Throws a type error if this isn't a function. */
+    open fun asFun(): List<Statement> {
+        throw TypeError(this, ValueType.FUN)
+    }
+
     /**
      * The length of this value if it can be considered to have a length (for example, if it is a string or list).
      *
@@ -123,6 +128,10 @@ data class StringVal(val v: String) : Value(ValueType.STRING) {
 data class ListVal(val lst: List<Value>) : Value(ValueType.LIST) {
     override val length: Int?
         get() = lst.size
+}
+
+data class FunVal(val body: List<Statement>) : Value(ValueType.FUN) {
+    override fun asFun(): List<Statement> { return body }
 }
 
 /**

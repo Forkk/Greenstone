@@ -85,4 +85,22 @@ class TestParser {
             WhileStmt(listOf(LitStmt(BoolVal(true))), listOf(LitStmt(IntVal(42))))
         ))
     }
+
+    @Test fun `test parsing anonymous function call`() {
+        assertParsesTo("@", listOf(CallStmt("")))
+    }
+
+    @Test fun `test parsing named function call`() {
+        assertParsesTo("@foo", listOf(CallStmt("foo")))
+    }
+
+    @Test fun `test parsing function literal`() {
+        assertParsesTo("fun 27 42 add end", listOf(
+            FunStmt(listOf(
+                LitStmt(IntVal(27)),
+                LitStmt(IntVal(42)),
+                CommandStmt("add")
+            ))
+        ))
+    }
 }
