@@ -1,8 +1,11 @@
 package net.forkk.greenstone.grpl
 
+import kotlinx.serialization.Serializable
+
 /**
  * An execution context for a GRPL program. Contains the stack and variable store.
  */
+@Serializable
 class Context {
     private val vars = hashMapOf<String, Value>()
 
@@ -39,6 +42,7 @@ class Context {
 /**
  * A value stack used for program execution.
  */
+@Serializable
 class Stack {
     private val _stack = mutableListOf<Value>()
 

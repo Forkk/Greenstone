@@ -3,6 +3,7 @@ plugins {
     id "maven-publish"
     id "org.jetbrains.kotlin.jvm"
     id "org.jmailen.kotlinter" version "2.3.2"
+    id "org.jetbrains.kotlin.plugin.serialization" version "1.3.60"
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -17,8 +18,13 @@ minecraft {
 
 
 repositories {
+    jcenter()
     maven { setUrl("https://dl.bintray.com/hotkeytlt/maven") }
     maven { url = "http://maven.fabricmc.net/" }
+    maven {
+        name = "CottonMC"
+        url = "http://server.bbkr.space:8081/artifactory/libs-release"
+    }
 }
 
 dependencies {
@@ -31,6 +37,11 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+
+    modImplementation "com.lettuce.fudge:fabric-drawer:3.2.0-1.15-pre1"
+
+    modImplementation "io.github.cottonmc:LibGui:1.8.0+1.15.2"
+
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit"

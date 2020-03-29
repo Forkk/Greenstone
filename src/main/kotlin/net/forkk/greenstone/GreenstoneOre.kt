@@ -1,5 +1,7 @@
 package net.forkk.greenstone
 
+import net.fabricmc.fabric.api.block.FabricBlockSettings
+import net.minecraft.block.Material
 import net.minecraft.block.OreBlock
 import net.minecraft.world.biome.Biome
 import net.minecraft.world.gen.GenerationStep
@@ -8,7 +10,10 @@ import net.minecraft.world.gen.decorator.RangeDecoratorConfig
 import net.minecraft.world.gen.feature.Feature
 import net.minecraft.world.gen.feature.OreFeatureConfig
 
-class GreenstoneOre(private val settings: Settings) : OreBlock(settings) {
+class GreenstoneOre() : OreBlock(
+    FabricBlockSettings.of(Material.STONE)
+        .strength(3.0f, 3.0f).build()
+) {
     fun handleBiome(biome: Biome) {
         if (biome.category !== Biome.Category.NETHER && biome.category !== Biome.Category.THEEND) {
             biome.addFeature(

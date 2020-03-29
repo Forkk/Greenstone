@@ -1,8 +1,11 @@
 package net.forkk.greenstone.grpl
 
+import kotlinx.serialization.Serializable
+
 /**
  * Represents a set of built-in commands that the interpreter can use.
  */
+@Serializable
 class CommandSet {
     private var map = hashMapOf<String, Command>()
 
@@ -34,6 +37,7 @@ val baseCmds: CommandSet = {
 /**
  * Represents a built-in command in the GRPL language.
  */
+@Serializable
 abstract class Command(val name: String) {
     /**
      * Executes this command in the given context.

@@ -1,5 +1,7 @@
 package net.forkk.greenstone.grpl
 
+import kotlinx.serialization.Serializable
+
 /**
  * Takes an `a` and `b` value, and performs the `intFn` if both are ints. Otherwise, casts to float and performs
  * `floatFn`. If either value cannot be cast to float, raises `TypeError`.
@@ -59,6 +61,7 @@ enum class ValueType {
  * This is a closed set of classes which represent the various types of value which can exist
  * within the language.
  */
+@Serializable
 sealed class Value(val type: ValueType) {
     open fun isNull(): Boolean { return false }
 
