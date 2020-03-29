@@ -24,6 +24,7 @@ object GRPLGrammar : Grammar<List<Statement>>() {
     private val elif by token("elif")
     private val then by token("then")
     private val while_ by token("while")
+    private val namedFun by token("fun@[^ ]*")
     private val fun_ by token("fun")
     private val do_ by token("do")
     private val end by token("end")
@@ -55,7 +56,12 @@ object GRPLGrammar : Grammar<List<Statement>>() {
     private val whileStmt by skip(while_) * body * skip(do_) * body * skip(end) map { (cond, body) ->
         WhileStmt(cond, body)
     }
-    private val funStmt by skip(fun_) * body * skip(end) map { FunStmt(it) }
+    private val funLitStmt by skip(fun_) * body * skip(end) map { FunStmt("", it) }
+    private val namedFunStmt by namedFun * body * skip(end) map { (name, body) ->
+        // Trim the "fun@" off the `name` match.
+        FunStmt(name.text.substring(4), body)
+    }
+    private val funStmt by namedFunStmt or funLitStmt
     private val callStmt by call map { CallStmt(it.text.substring(1)) }
     private val complexStmt by ifStmt or whileStmt or funStmt or callStmt
 

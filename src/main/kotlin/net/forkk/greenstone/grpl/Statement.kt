@@ -93,11 +93,19 @@ data class WhileStmt(val cond: List<Statement>, val body: List<Statement>) : Sta
 }
 
 /**
- * A function literal. This is basically a lambda.
+ * This statement either represents a function literal or a named function declaration.
+ *
+ * For function literals, the `name` field will be empty. The only difference between the two is that a function
+ * literal pushes its function value on the stack, while a named function declaration stores the function value
+ * in the variable given by the `name`.
  */
-data class FunStmt(val body: List<Statement>) : Statement() {
+data class FunStmt(val name: String, val body: List<Statement>) : Statement() {
     override fun exec(ctx: Context) {
-        ctx.stack.push(FunVal(body))
+        if (name.isEmpty()) {
+            ctx.stack.push(FunVal(body))
+        } else {
+            ctx.setVar(name, FunVal(body))
+        }
     }
 }
 
@@ -107,6 +115,10 @@ data class FunStmt(val body: List<Statement>) : Statement() {
  */
 data class CallStmt(val name: String) : Statement() {
     override fun exec(ctx: Context) {
-        ctx.exec(ctx.stack.pop().asFun())
+        if (name.isEmpty()) {
+            ctx.exec(ctx.stack.pop().asFun())
+        } else {
+            ctx.exec(ctx.getVar(name).asFun())
+        }
     }
 }

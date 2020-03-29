@@ -94,9 +94,19 @@ class TestParser {
         assertParsesTo("@foo", listOf(CallStmt("foo")))
     }
 
+    @Test fun `test parsing named function declaration`() {
+        assertParsesTo("fun@foo 27 42 add end", listOf(
+            FunStmt("foo", listOf(
+                LitStmt(IntVal(27)),
+                LitStmt(IntVal(42)),
+                CommandStmt("add")
+            ))
+        ))
+    }
+
     @Test fun `test parsing function literal`() {
         assertParsesTo("fun 27 42 add end", listOf(
-            FunStmt(listOf(
+            FunStmt("", listOf(
                 LitStmt(IntVal(27)),
                 LitStmt(IntVal(42)),
                 CommandStmt("add")

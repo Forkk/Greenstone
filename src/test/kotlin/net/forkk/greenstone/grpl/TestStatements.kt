@@ -85,4 +85,16 @@ class TestStatements : InterpreterTest() {
         assertEquals(1, ctx.stack.size)
         assertEquals(IntVal(42), ctx.stack.peek())
     }
+
+    @Test fun `test named function declaration`() {
+        val ctx = runProgram("fun@foo 42 end")
+        assertEquals(FunVal(listOf(LitStmt(IntVal(42)))), ctx.getVar("foo"))
+        assertEquals(0, ctx.stack.size)
+    }
+
+    @Test fun `test named function call`() {
+        val ctx = runProgram("fun@foo 42 end @foo")
+        assertEquals(1, ctx.stack.size)
+        assertEquals(IntVal(42), ctx.stack.peek())
+    }
 }
