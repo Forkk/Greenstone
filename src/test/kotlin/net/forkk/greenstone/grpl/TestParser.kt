@@ -54,4 +54,29 @@ class TestParser {
                 StoreVarStmt("foo")
             ))
     }
+
+    @Test fun `test parsing if statement`() {
+        assertParsesTo("if true then 42 end", listOf(
+            IfStmt(listOf(
+                IfCondition(listOf(LitStmt(BoolVal(true))), listOf(LitStmt(IntVal(42))))
+            ), null)
+        ))
+    }
+
+    @Test fun `test parsing if else statement`() {
+        assertParsesTo("if true then 42 else 27 end", listOf(
+            IfStmt(listOf(
+                IfCondition(listOf(LitStmt(BoolVal(true))), listOf(LitStmt(IntVal(42))))
+            ), listOf(LitStmt(IntVal(27))))
+        ))
+    }
+
+    @Test fun `test parsing if elif else statement`() {
+        assertParsesTo("if true then 42 elif false then 13 else 27 end", listOf(
+            IfStmt(listOf(
+                IfCondition(listOf(LitStmt(BoolVal(true))), listOf(LitStmt(IntVal(42)))),
+                IfCondition(listOf(LitStmt(BoolVal(false))), listOf(LitStmt(IntVal(13))))
+            ), listOf(LitStmt(IntVal(27))))
+        ))
+    }
 }

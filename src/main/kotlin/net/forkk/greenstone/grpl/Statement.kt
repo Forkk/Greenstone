@@ -42,3 +42,34 @@ data class CommandStmt(val cmdname: String) : Statement() {
         }
     }
 }
+
+/**
+ * An if or elif part of an if statement. The actual `IfStmt` contains a list of these
+ * and an `else` block.
+ */
+
+data class IfCondition(val cond: List<Statement>, val body: List<Statement>) {
+    /**
+     * Runs the `cond` statements and, if true is left on the stack, runs `body` and returns true.
+     */
+    fun exec(ctx: Context): Boolean {
+        ctx.exec(cond)
+        return if (ctx.stack.pop().asBoolOrErr()) {
+            ctx.exec(body)
+            true
+        } else { false }
+    }
+}
+
+data class IfStmt(val conds: List<IfCondition>, val else_: List<Statement>?) : Statement() {
+    override fun exec(ctx: Context) {
+        for (cond in conds) {
+            if (cond.exec(ctx)) {
+                return
+            }
+        }
+        if (else_ != null && else_.isNotEmpty()) {
+            ctx.exec(else_)
+        }
+    }
+}

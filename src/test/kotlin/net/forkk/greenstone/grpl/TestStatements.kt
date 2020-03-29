@@ -38,4 +38,37 @@ class TestStatements : InterpreterTest() {
         assertEquals(IntVal(42), ctx.stack.peek())
         assertEquals(1, ctx.stack.size)
     }
+
+    @Test fun `test if statement`() {
+        val ctx = runProgram("if true then 42 end")
+        assertEquals(IntVal(42), ctx.stack.peek())
+        assertEquals(1, ctx.stack.size)
+
+        val ctx2 = runProgram("if false then 42 end")
+        assertEquals(0, ctx2.stack.size)
+    }
+
+    @Test fun `test if else statement`() {
+        val ctx1 = runProgram("if true then 42 else 27 end")
+        assertEquals(IntVal(42), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("if false then 42 else 27 end")
+        assertEquals(IntVal(27), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test if elif else statement`() {
+        val ctx1 = runProgram("if true then 42 elif false then 13 else 27 end")
+        assertEquals(IntVal(42), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("if false then 42 elif true then 13 else 27 end")
+        assertEquals(IntVal(13), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+
+        val ctx3 = runProgram("if false then 42 elif false then 13 else 27 end")
+        assertEquals(IntVal(27), ctx3.stack.peek())
+        assertEquals(1, ctx3.stack.size)
+    }
 }
