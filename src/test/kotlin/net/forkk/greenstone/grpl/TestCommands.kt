@@ -55,6 +55,26 @@ class TestBoolCommands : InterpreterTest() {
 }
 
 class TestMathCommands : InterpreterTest() {
+    @Test fun `test gt command`() {
+        val ctx1 = runProgram("3 2 gt")
+        assertEquals(BoolVal(true), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("2 3 gt")
+        assertEquals(BoolVal(false), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test lt command`() {
+        val ctx1 = runProgram("2 3 lt")
+        assertEquals(BoolVal(true), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("3 2 lt")
+        assertEquals(BoolVal(false), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
     @Test fun `test add command`() {
         val ctx = runProgram("42 27 add")
         assertEquals(IntVal(69), ctx.stack.peek())

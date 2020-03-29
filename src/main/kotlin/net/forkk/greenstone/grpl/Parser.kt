@@ -23,6 +23,8 @@ object GRPLGrammar : Grammar<List<Statement>>() {
     private val else_ by token("else")
     private val elif by token("elif")
     private val then by token("then")
+    private val while_ by token("while")
+    private val do_ by token("do")
     private val end by token("end")
     private val command by token("[a-zA-Z_-][a-zA-Z0-9_-]*")
     private val whitespace by token("[ \n\r]+", ignore = true)
@@ -48,8 +50,12 @@ object GRPLGrammar : Grammar<List<Statement>>() {
             optional(skip(else_) * body) * skip(end) map { (conds, elsebody) ->
         IfStmt(conds, elsebody)
     }
+    private val whileStmt by skip(while_) * body * skip(do_) * body * skip(end) map { (cond, body) ->
+        WhileStmt(cond, body)
+    }
+    private val complexStmt by ifStmt or whileStmt
 
-    private val stmtParser by litStmt or storeStmt or loadStmt or commandStmt or ifStmt
+    private val stmtParser by litStmt or storeStmt or loadStmt or commandStmt or complexStmt
     private val stmtList by separatedTerms(stmtParser, whitespace)
 
     override val rootParser: Parser<List<Statement>> by stmtList

@@ -23,6 +23,27 @@ fun floatIntBinOp(
 }
 
 /**
+ * Similar to `floatIntBinOp`, but returns a bool
+ *
+ * @param a value to perform op on
+ * @param b other value to perform op on
+ * @param floatFn operation to perform if values are cast to float
+ * @param intFn operation to perform if both values are ints
+ */
+fun floatIntCmpOp(
+    av: Value,
+    bv: Value,
+    floatFn: (Double, Double) -> Boolean,
+    intFn: (Int, Int) -> Boolean
+): Value {
+    return if (av.isType(ValueType.INT) && bv.isType(ValueType.INT)) {
+        BoolVal(intFn(av.asIntOrErr(), bv.asIntOrErr()))
+    } else {
+        BoolVal(floatFn(av.asFloatOrErr(), bv.asFloatOrErr()))
+    }
+}
+
+/**
  * Used to represent the type of a value as a value.
  */
 enum class ValueType {

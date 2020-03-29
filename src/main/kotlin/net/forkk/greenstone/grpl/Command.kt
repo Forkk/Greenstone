@@ -26,6 +26,7 @@ val baseCmds: CommandSet = {
     val cmdSet = CommandSet()
     cmdSet.addCommands(PopCmd, DupCmd, SwapCmd)
     cmdSet.addCommands(NotCmd, AndCmd, OrCmd)
+    cmdSet.addCommands(GtCmd, LtCmd)
     cmdSet.addCommands(AddCmd, SubCmd, MulCmd, DivCmd, IDivCmd)
     cmdSet
 }()
@@ -98,6 +99,31 @@ object OrCmd : Command("or") {
 
     override val help: String
         get() = "Pops two values and pushes false if both are false, otherwise pushes true."
+}
+
+object GtCmd : Command("gt") {
+    override fun exec(ctx: Context) {
+        val bv = ctx.stack.pop()
+        val av = ctx.stack.pop()
+        val result = floatIntCmpOp(av, bv, { a, b -> a > b }, { a, b -> a > b })
+        ctx.stack.push(result)
+    }
+
+    override val help: String
+        get() = "Pops the top two elements off the stack, compares them, and returns true if the bottom one is " +
+                "greater than the top."
+}
+object LtCmd : Command("lt") {
+    override fun exec(ctx: Context) {
+        val bv = ctx.stack.pop()
+        val av = ctx.stack.pop()
+        val result = floatIntCmpOp(av, bv, { a, b -> a < b }, { a, b -> a < b })
+        ctx.stack.push(result)
+    }
+
+    override val help: String
+        get() = "Pops the top two elements off the stack, compares them, and returns true if the bottom one is " +
+                "less than the top."
 }
 
 object AddCmd : Command("add") {

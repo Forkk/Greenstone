@@ -79,4 +79,10 @@ class TestParser {
             ), listOf(LitStmt(IntVal(27))))
         ))
     }
+
+    @Test fun `test parsing while statement`() {
+        assertParsesTo("while true do 42 end", listOf(
+            WhileStmt(listOf(LitStmt(BoolVal(true))), listOf(LitStmt(IntVal(42))))
+        ))
+    }
 }

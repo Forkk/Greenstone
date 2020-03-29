@@ -61,6 +61,10 @@ data class IfCondition(val cond: List<Statement>, val body: List<Statement>) {
     }
 }
 
+/**
+ * The actual conditional statement. Contains one or more `IfCondition`s. The first represents the if condition, and
+ * the rest represent elif conditions. There is also an optional body for an else clause.
+ */
 data class IfStmt(val conds: List<IfCondition>, val else_: List<Statement>?) : Statement() {
     override fun exec(ctx: Context) {
         for (cond in conds) {
@@ -70,6 +74,20 @@ data class IfStmt(val conds: List<IfCondition>, val else_: List<Statement>?) : S
         }
         if (else_ != null && else_.isNotEmpty()) {
             ctx.exec(else_)
+        }
+    }
+}
+
+/**
+ * A while loop statement. Executes `body` repeatedly as long as executing `cond` continues to push true on the stack.
+ */
+data class WhileStmt(val cond: List<Statement>, val body: List<Statement>) : Statement() {
+    override fun exec(ctx: net.forkk.greenstone.grpl.Context) {
+        while (true) {
+            ctx.exec(cond)
+            if (ctx.stack.pop().asBoolOrErr()) {
+                ctx.exec(body)
+            } else { break }
         }
     }
 }

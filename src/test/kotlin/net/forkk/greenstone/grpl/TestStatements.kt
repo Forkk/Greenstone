@@ -71,4 +71,12 @@ class TestStatements : InterpreterTest() {
         assertEquals(IntVal(27), ctx3.stack.peek())
         assertEquals(1, ctx3.stack.size)
     }
+
+    @Test fun `test while stmt`() {
+        val ctx = runProgram("10 >a while <a 0 gt do <a <a 1 sub >a end")
+        assertEquals(10, ctx.stack.size)
+        for (i in 1..10) {
+            assertEquals(IntVal(i), ctx.stack.pop())
+        }
+    }
 }
