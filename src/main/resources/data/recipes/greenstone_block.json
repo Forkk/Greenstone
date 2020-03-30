@@ -1,0 +1,16 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "###",
+        "###",
+        "###"
+    ],
+    "key": {
+        "#": {
+            "item": "greenstone:greenstone_dust"
+        }
+    },
+    "result": {
+        "item": "greenstone:greenstone_dust"
+    }
+}

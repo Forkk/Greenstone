@@ -1,0 +1,12 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        {
+            "item": "greenstone:greenstone_block"
+        }
+    ],
+    "result": {
+        "item": "greenstone:greenstone_dust",
+        "count": 9
+    }
+}
