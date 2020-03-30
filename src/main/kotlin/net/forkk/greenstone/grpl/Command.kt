@@ -7,16 +7,34 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 class CommandSet {
+    constructor(vararg cmds: Command) {
+        cmds.forEach { c ->
+            this.map[c.name] = c
+        }
+    }
+
     private var map = hashMapOf<String, Command>()
 
     fun get(name: String): Command? {
         return map[name]
     }
 
+    /**
+     * Adds commands to this set.
+     */
     fun addCommands(vararg cmds: Command) {
         cmds.forEach { c ->
             this.map[c.name] = c
         }
+    }
+
+    /**
+     * Merges another command set into this one.
+     *
+     * Commands in `other` override commands that are present in both.
+     */
+    fun merge(other: CommandSet) {
+        this.map.putAll(other.map)
     }
 }
 
@@ -25,13 +43,13 @@ class CommandSet {
  *
  * Theoretically we could allow other mods to extend this later.
  */
-fun baseCmds(extra: Array<Command> = arrayOf()): CommandSet {
+fun baseCmds(extra: CommandSet? = null): CommandSet {
     val cmdSet = CommandSet()
     cmdSet.addCommands(PopCmd, DupCmd, SwapCmd)
     cmdSet.addCommands(NotCmd, AndCmd, OrCmd)
     cmdSet.addCommands(GtCmd, LtCmd)
     cmdSet.addCommands(AddCmd, SubCmd, MulCmd, DivCmd, IDivCmd)
-    cmdSet.addCommands(*extra)
+    if (extra != null) cmdSet.merge(extra)
     return cmdSet
 }
 

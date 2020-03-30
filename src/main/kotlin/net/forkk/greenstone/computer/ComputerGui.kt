@@ -5,10 +5,9 @@ import io.github.cottonmc.cotton.gui.CottonCraftingController
 import io.github.cottonmc.cotton.gui.client.CottonInventoryScreen
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
 import io.github.cottonmc.cotton.gui.widget.WTextField
-import net.forkk.greenstone.grpl.Command
 import net.forkk.greenstone.grpl.Context
 import net.forkk.greenstone.grpl.ExecError
-import net.forkk.greenstone.grpl.ValueType
+import net.forkk.greenstone.grpl.GrplIO
 import net.forkk.greenstone.grpl.parse
 import net.minecraft.container.BlockContext
 import net.minecraft.entity.player.PlayerEntity
@@ -26,7 +25,7 @@ class ComputerGui(syncId: Int, playerInventory: PlayerInventory, context: BlockC
     getBlockPropertyDelegate(context)
 ) {
     private val termWidget = WTerminal()
-    private val interpreter = Context(arrayOf(TermPrintCommand(termWidget)))
+    private val interpreter = Context(TerminalIO(termWidget).ioCommands())
     private val textWidget = WLineEdit { input ->
         if (input.isNotBlank()) {
             termWidget.termPrintln(">$input")
@@ -65,18 +64,8 @@ class WLineEdit(private val enterCallback: (String) -> Unit) : WTextField() {
     }
 }
 
-/** Print command for WTerminal */
-class TermPrintCommand(private val term: WTerminal) : Command("print") {
-    override fun exec(ctx: Context) {
-        val v = ctx.stack.pop()
-        val str = if (v.isType(ValueType.STRING)) {
-            v.asString()
-        } else {
-            v.toString()
-        }
-        term.termPrintln(str)
+class TerminalIO(private val term: WTerminal) : GrplIO {
+    override fun print(str: String) {
+        term.termPrint(str)
     }
-
-    override val help: String
-        get() = "Pops a value off the top of the stack and prints it to the terminal."
 }

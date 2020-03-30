@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * An execution context for a GRPL program. Contains the stack and variable store.
  */
 @Serializable
-class Context(private val extraCmds: Array<Command> = arrayOf()) {
+class Context(private val extraCmds: CommandSet? = null) {
     private val vars = hashMapOf<String, Value>()
 
     val commands = baseCmds(extraCmds)
