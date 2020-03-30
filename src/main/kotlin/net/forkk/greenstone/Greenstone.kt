@@ -2,17 +2,16 @@ package net.forkk.greenstone
 
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.block.FabricBlockSettings
-import net.fabricmc.fabric.api.client.screen.ScreenProviderRegistry
-import net.fabricmc.fabric.api.container.ContainerProviderRegistry
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
+import net.fabricmc.fabric.api.network.PacketContext
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
 import net.forkk.greenstone.computer.ComputerBlock
 import net.forkk.greenstone.computer.ComputerBlockEntity
-import net.forkk.greenstone.computer.ComputerGui
 import net.forkk.greenstone.computer.ComputerScreen
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
-import net.minecraft.container.BlockContext
-import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.client.MinecraftClient
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemGroup
@@ -23,6 +22,25 @@ import net.minecraft.world.biome.Biome
 
 @Suppress("unused")
 object Greenstone : ModInitializer {
+    private val GREENSTONE_DUST = Item(Item.Settings().group(ItemGroup.REDSTONE))
+    private val GREENSTONE_ORE = GreenstoneOre()
+    private val GREENSTONE_BLOCK = Block(FabricBlockSettings.copy(Blocks.REDSTONE_BLOCK).build())
+
+    private val COMPUTER = ComputerBlock()
+
+    // // Client -> server packets
+    // Packet for opening and closing the terminal
+    val PACKET_TERMINAL_OPENED = Identifier("greenstone", "packet_terminal_opened")
+    val PACKET_TERMINAL_CLOSED = Identifier("greenstone", "packet_terminal_closed")
+    // Packet for when the user inputs something
+    val PACKET_TERMINAL_INPUT = Identifier("greenstone", "packet_terminal_output")
+
+    // // Server -> Client packets
+    // Packet for sending new terminal output
+    val PACKET_TERMINAL_OUTPUT = Identifier("greenstone", "packet_terminal_output")
+    // Packet for sending screen contents when terminal is opened
+    val PACKET_TERMINAL_CONTENTS = Identifier("greenstone", "packet_terminal_contents")
+
     override fun onInitialize() {
         Registry.register(Registry.ITEM, Identifier("greenstone", "greenstone_dust"), GREENSTONE_DUST)
 
@@ -57,32 +75,54 @@ object Greenstone : ModInitializer {
 
         Registry.register(Registry.BLOCK_ENTITY_TYPE, Identifier("greenstone", "computer"), ComputerBlockEntity.TYPE)
 
-        ContainerProviderRegistry.INSTANCE.registerFactory(
-            Identifier("greenstone", "computer")
-        ) { syncId: Int, _: Identifier, player: PlayerEntity, buf: PacketByteBuf ->
-            ComputerGui(
-                syncId,
-                player.inventory,
-                BlockContext.create(player.world, buf.readBlockPos())
-            )
+        ServerSidePacketRegistry.INSTANCE.register(
+            PACKET_TERMINAL_INPUT
+        ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+            val input = attachedData.readString()
+            packetContext.taskQueue.execute {
+                ComputerBlockEntity.handleInput(packetContext.player, input)
+            }
+        }
+        ServerSidePacketRegistry.INSTANCE.register(
+            PACKET_TERMINAL_OPENED
+        ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+            val pos = attachedData.readBlockPos()
+            packetContext.taskQueue.execute {
+                ComputerBlockEntity.handleGuiOpen(packetContext.player, pos)
+            }
+        }
+        ServerSidePacketRegistry.INSTANCE.register(
+            PACKET_TERMINAL_CLOSED
+        ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+            packetContext.taskQueue.execute {
+                ComputerBlockEntity.handleGuiClose(packetContext.player)
+            }
         }
     }
-
-    private val GREENSTONE_DUST = Item(Item.Settings().group(ItemGroup.REDSTONE))
-    private val GREENSTONE_ORE = GreenstoneOre()
-    private val GREENSTONE_BLOCK = Block(FabricBlockSettings.copy(Blocks.REDSTONE_BLOCK).build())
-
-    private val COMPUTER = ComputerBlock()
 }
 
 @Suppress("unused")
 fun clientInit() {
-    ScreenProviderRegistry.INSTANCE.registerFactory(
-        Identifier("greenstone", "computer")
-    ) { syncId: Int, _: Identifier, player: PlayerEntity, buf: PacketByteBuf ->
-        ComputerScreen(
-            ComputerGui(syncId, player.inventory, BlockContext.create(player.world, buf.readBlockPos())),
-            player
-        )
+    ClientSidePacketRegistry.INSTANCE.register(
+        Greenstone.PACKET_TERMINAL_OUTPUT
+    ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+        val str = attachedData.readString()
+        packetContext.taskQueue.execute {
+            val screen = MinecraftClient.getInstance().currentScreen
+            if (screen != null && screen is ComputerScreen) {
+                screen.gui.onPrintReceived(str)
+            }
+        }
+    }
+    ClientSidePacketRegistry.INSTANCE.register(
+        Greenstone.PACKET_TERMINAL_CONTENTS
+    ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+        val str = attachedData.readString()
+        packetContext.taskQueue.execute {
+            val screen = MinecraftClient.getInstance().currentScreen
+            if (screen != null && screen is ComputerScreen) {
+                screen.gui.onContentsReceived(str)
+            }
+        }
     }
 }

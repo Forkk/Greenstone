@@ -1,19 +1,18 @@
 package net.forkk.greenstone.computer
 
-import net.fabricmc.fabric.api.container.ContainerProviderRegistry
 import net.minecraft.block.Block
 import net.minecraft.block.BlockEntityProvider
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.HorizontalFacingBlock
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.Properties
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
-import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
@@ -48,14 +47,17 @@ class ComputerBlock : HorizontalFacingBlock(Settings.copy(Blocks.IRON_BLOCK)), B
         hand: Hand?,
         hit: BlockHitResult
     ): ActionResult? {
-        if (world.isClient) return ActionResult.PASS
-        val be = world.getBlockEntity(pos)
-        if (be != null && be is ComputerBlockEntity) {
-            ContainerProviderRegistry.INSTANCE.openContainer(
-                Identifier("greenstone", "computer"),
-                player
-            ) { packetByteBuf -> packetByteBuf.writeBlockPos(pos) }
+        if (world.isClient) {
+            val be = world.getBlockEntity(pos)
+            if (be != null && be is ComputerBlockEntity) {
+                // Tell the server that we're listening for terminal output
+                be.openTerminal()
+
+                // Open the terminal GUI
+                MinecraftClient.getInstance().openScreen(ComputerScreen())
+            }
+            return ActionResult.SUCCESS
         }
-        return ActionResult.SUCCESS
+        return ActionResult.PASS
     }
 }

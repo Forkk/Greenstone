@@ -3,9 +3,9 @@ package net.forkk.greenstone.computer
 import io.github.cottonmc.cotton.gui.client.ScreenDrawing
 import io.github.cottonmc.cotton.gui.widget.WWidget
 
-class WTerminal() : WWidget() {
+class WTerminal(initMsg: String) : WWidget() {
     /** Contains the contents of the screen. */
-    private var screenBuf: String = ""
+    private var screenBuf: String = initMsg
 
     /**
      * Prints the given string to the terminal screen.
@@ -14,8 +14,12 @@ class WTerminal() : WWidget() {
         screenBuf += str
     }
 
-    /** Prints a line to the terminal screen. */
-    fun termPrintln(str: String) = termPrint("$str\n")
+    /**
+     * Clears the screen and sets the contents of the terminal to `str`.
+     */
+    fun setContents(str: String) {
+        screenBuf = str
+    }
 
     override fun canResize(): Boolean {
         return true
