@@ -1,6 +1,10 @@
 package net.forkk.greenstone.computer
 
-import net.minecraft.block.*
+import net.minecraft.block.Block
+import net.minecraft.block.BlockEntityProvider
+import net.minecraft.block.BlockState
+import net.minecraft.block.Blocks
+import net.minecraft.block.HorizontalFacingBlock
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity

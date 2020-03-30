@@ -36,6 +36,8 @@ class CommandSet {
     fun merge(other: CommandSet) {
         this.map.putAll(other.map)
     }
+
+    val list: Iterable<Command> get() = this.map.values
 }
 
 /**

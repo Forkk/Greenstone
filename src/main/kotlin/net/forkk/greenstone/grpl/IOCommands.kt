@@ -12,10 +12,17 @@ interface GrplIO {
     /** Prints the given string followed by a new line */
     fun println(str: String) = this.print("$str\n")
 
+    /** Clears the terminal screen. */
+    fun clear()
+
     /**
      * Generates a set of IO commands which will use this interface.
      */
-    fun ioCommands(): CommandSet = CommandSet(PrintCommand(this), HelpCommand(this))
+    fun ioCommands(): CommandSet = CommandSet(
+        PrintCommand(this),
+        ClearCommand(this),
+        HelpCommand(this)
+    )
 }
 
 class PrintCommand(private val io: GrplIO) : Command("print") {
@@ -32,14 +39,31 @@ class PrintCommand(private val io: GrplIO) : Command("print") {
     override val help: String
         get() = "Pops a value off the top of the stack and prints it to the terminal."
 }
+
+class ClearCommand(private val io: GrplIO) : Command("clear") {
+    override fun exec(ctx: Context) {
+        io.clear()
+    }
+
+    override val help: String
+        get() = "Pops a value off the top of the stack and prints it to the terminal."
+}
+
 class HelpCommand(private val io: GrplIO) : Command("help") {
     override fun exec(ctx: Context) {
-        val name = ctx.stack.pop().asString()
-        val cmd = ctx.commands.get(name)
-        if (cmd != null) {
-            io.println(cmd.help)
+        if (ctx.stack.size > 0) {
+            val name = ctx.stack.pop().asString()
+            val cmd = ctx.commands.get(name)
+            if (cmd != null) {
+                io.println(cmd.help)
+            } else {
+                io.println("There is no command called $name.")
+            }
         } else {
-            io.println("There is no command called $name.")
+            io.println("List of available commands:")
+            val cmdlist = ctx.commands.list.joinToString { it.name }
+            io.println(cmdlist)
+            io.println("Type `\"command\" help` for information about a specific command.")
         }
     }
 

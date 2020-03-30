@@ -129,10 +129,23 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
         passedData.writeString(data.logs)
         ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_CONTENTS, passedData)
     }
+
+    fun clearTerminal() {
+        data.logs = ""
+        for (player in openPlayers) {
+            val passedData = PacketByteBuf(Unpooled.buffer())
+            passedData.writeString(data.logs)
+            ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_CONTENTS, passedData)
+        }
+    }
 }
 
 class ComputerIO(private val block: ComputerBlockEntity) : GrplIO {
     override fun print(str: String) {
         block.printToTerminal(str)
+    }
+
+    override fun clear() {
+        block.clearTerminal()
     }
 }
