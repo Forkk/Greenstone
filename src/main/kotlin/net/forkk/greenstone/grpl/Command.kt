@@ -25,14 +25,15 @@ class CommandSet {
  *
  * Theoretically we could allow other mods to extend this later.
  */
-val baseCmds: CommandSet = {
+fun baseCmds(extra: Array<Command> = arrayOf()): CommandSet {
     val cmdSet = CommandSet()
     cmdSet.addCommands(PopCmd, DupCmd, SwapCmd)
     cmdSet.addCommands(NotCmd, AndCmd, OrCmd)
     cmdSet.addCommands(GtCmd, LtCmd)
     cmdSet.addCommands(AddCmd, SubCmd, MulCmd, DivCmd, IDivCmd)
-    cmdSet
-}()
+    cmdSet.addCommands(*extra)
+    return cmdSet
+}
 
 /**
  * Represents a built-in command in the GRPL language.

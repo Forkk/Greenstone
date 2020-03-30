@@ -97,6 +97,11 @@ sealed class Value(val type: ValueType) {
         throw TypeError(this, ValueType.FUN)
     }
 
+    /** Casts this as a string. Throws a type error if this isn't a string. */
+    open fun asString(): String {
+        throw TypeError(this, ValueType.STRING)
+    }
+
     /**
      * The length of this value if it can be considered to have a length (for example, if it is a string or list).
      *
@@ -124,8 +129,8 @@ data class FloatVal(val v: Double) : Value(ValueType.FLOAT) {
 }
 
 data class StringVal(val v: String) : Value(ValueType.STRING) {
-    override val length: Int?
-        get() = v.length
+    override fun asString(): String = this.v
+    override val length: Int? get() = v.length
 }
 
 data class ListVal(val lst: List<Value>) : Value(ValueType.LIST) {
