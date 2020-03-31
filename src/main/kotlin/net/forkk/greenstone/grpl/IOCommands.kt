@@ -21,6 +21,7 @@ interface GrplIO {
     fun ioCommands(): CommandSet = CommandSet(
         PrintCommand(this),
         ClearCommand(this),
+        TraceCommand(this),
         HelpCommand(this)
     )
 }
@@ -47,6 +48,16 @@ class ClearCommand(private val io: GrplIO) : Command("clear") {
 
     override val help: String
         get() = "Pops a value off the top of the stack and prints it to the terminal."
+}
+
+class TraceCommand(private val io: GrplIO) : Command("trace") {
+    override fun exec(ctx: Context) {
+        io.println(ctx.stack.list.joinToString { it.toString() })
+    }
+
+    override val help: String
+        get() = "Prints the current value stack to the terminal in order from bottom to top, without removing any items. " +
+                "Use for debugging."
 }
 
 class HelpCommand(private val io: GrplIO) : Command("help") {

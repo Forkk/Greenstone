@@ -46,6 +46,9 @@ class Context(private val extraCmds: CommandSet? = null) {
 class Stack {
     private val _stack = mutableListOf<Value>()
 
+    /** A read-only list of elements in the stack */
+    val list: List<Value> get() = _stack
+
     /** Pushes a value on the stack */
     fun push(v: Value) {
         _stack.add(v)

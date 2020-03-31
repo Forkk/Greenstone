@@ -49,7 +49,7 @@ fun baseCmds(extra: CommandSet? = null): CommandSet {
     val cmdSet = CommandSet()
     cmdSet.addCommands(PopCmd, DupCmd, SwapCmd)
     cmdSet.addCommands(NotCmd, AndCmd, OrCmd)
-    cmdSet.addCommands(GtCmd, LtCmd)
+    cmdSet.addCommands(EqCmd, GtCmd, LtCmd)
     cmdSet.addCommands(AddCmd, SubCmd, MulCmd, DivCmd, IDivCmd)
     if (extra != null) cmdSet.merge(extra)
     return cmdSet
@@ -103,7 +103,7 @@ object NotCmd : Command("not") {
     }
 
     override val help: String
-        get() = "Pops the boolean value on the top of the stack and pushes the opposite."
+        get() = "Pops a boolean value and pushes the opposite."
 }
 object AndCmd : Command("and") {
     override fun exec(ctx: Context) {
@@ -113,7 +113,7 @@ object AndCmd : Command("and") {
     }
 
     override val help: String
-        get() = "Pops two values and pushes true if both are true, otherwise pushes false."
+        get() = "Pops two values and pushes true if both are true, otherwise false."
 }
 object OrCmd : Command("or") {
     override fun exec(ctx: Context) {
@@ -123,9 +123,23 @@ object OrCmd : Command("or") {
     }
 
     override val help: String
-        get() = "Pops two values and pushes false if both are false, otherwise pushes true."
+        get() = "Pops two values and pushes false if both are false, otherwise true."
 }
 
+object EqCmd : Command("eq") {
+    override fun exec(ctx: Context) {
+        val bv = ctx.stack.pop()
+        val av = ctx.stack.pop()
+        ctx.stack.push(BoolVal(av == bv))
+    }
+
+    override val help: String
+        get() = "Pops two values, and pushes true if they are equal, false if they are not.\n" +
+                "Values are considered equal, if and only if their types and values are equal. " +
+                "No type casting is done.\n" +
+                "Example: `2 2 eq` would push `true` on the stack, but `2.0 2 eq` will push `false`, as one value is " +
+                "an integer, while the other is a float."
+}
 object GtCmd : Command("gt") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
@@ -135,8 +149,8 @@ object GtCmd : Command("gt") {
     }
 
     override val help: String
-        get() = "Pops the top two elements off the stack, compares them, and returns true if the bottom one is " +
-                "greater than the top."
+        get() = "Pops two values, compares them, and pushes true if the top one is greater than the bottom one.\n" +
+                "Example: `2 3 gt` would leave `true` on the stack"
 }
 object LtCmd : Command("lt") {
     override fun exec(ctx: Context) {
@@ -147,8 +161,8 @@ object LtCmd : Command("lt") {
     }
 
     override val help: String
-        get() = "Pops the top two elements off the stack, compares them, and returns true if the bottom one is " +
-                "less than the top."
+        get() = "Pops two values, compares them, and pushes true if the top one is less than the bottom one.\n" +
+                "Example: `3 2 lt` would leave `true` on the stack"
 }
 
 object AddCmd : Command("add") {
@@ -160,7 +174,8 @@ object AddCmd : Command("add") {
     }
 
     override val help: String
-        get() = "Adds top two numbers on the stack. Raises type error if values are not numbers."
+        get() = "Pops two values and pushes their sum.\n" +
+                "Raises a type error if the values are not numbers."
 }
 object SubCmd : Command("sub") {
     override fun exec(ctx: Context) {
@@ -171,8 +186,9 @@ object SubCmd : Command("sub") {
     }
 
     override val help: String
-        get() = "Subtracts numbers on the stack. For example, if the stack is `a b` (a pushed first), this pushes a - b. " +
-                "Raises type error if the values are not numbers."
+        get() = "Pops two values and subtracts the top one from the bottom one.\n" +
+                "Example: if the stack is `a b` (a pushed first), this pushes a - b.\n" +
+                "Raises a type error if the values are not numbers."
 }
 object MulCmd : Command("mul") {
     override fun exec(ctx: Context) {
@@ -183,7 +199,8 @@ object MulCmd : Command("mul") {
     }
 
     override val help: String
-        get() = "Multiplies numbers on the stack. Raises type error if the values are not numbers."
+        get() = "Pops two values and pushes their product.\n" +
+                "Raises a type error if the values are not numbers."
 }
 object DivCmd : Command("div") {
     override fun exec(ctx: Context) {
@@ -193,9 +210,9 @@ object DivCmd : Command("div") {
     }
 
     override val help: String
-        get() = "Performs floating point division. If the operands are integers, they will be cast to floats before division. " +
-                "Ordering is the same as subtraction, so if the stack is `a b` (a pushed first), this pushes a / b. " +
-                "Raises type error if the values are not numbers."
+        get() = "Pops two values and divides the bottom one by the top one.\n" +
+                "Example: if the stack is `a b` (a pushed first), this pushes a / b.\n" +
+                "Raises a type error if the values are not numbers."
 }
 object IDivCmd : Command("idiv") {
     override fun exec(ctx: Context) {
@@ -205,7 +222,8 @@ object IDivCmd : Command("idiv") {
     }
 
     override val help: String
-        get() = "Performs integer division. If the operands are floats, they will be cast to integers before division. " +
-                "Ordering is the same as subtraction, so if the stack is `a b` (a pushed first), this pushes a / b. " +
-                "Raises type error if the values are not numbers."
+        get() = "Pops two values and divides bottom by top using integer division. " +
+                "This means float values are cast to int, before division, and the returned value is an int.\n" +
+                "Example: if the stack is `a b` (a pushed first), this pushes a / b.\n" +
+                "Raises a type error if the values are not numbers."
 }

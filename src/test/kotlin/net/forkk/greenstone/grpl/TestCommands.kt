@@ -20,6 +20,50 @@ class TestCommands : InterpreterTest() {
         assertEquals(IntVal(42), ctx.stack.pop())
         assertEquals(IntVal(27), ctx.stack.pop())
     }
+
+    @Test fun `test eq command with ints`() {
+        val ctx1 = runProgram("2 2 eq")
+        assertEquals(BoolVal(true), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("2 3 eq")
+        assertEquals(BoolVal(false), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test eq command with floats`() {
+        val ctx1 = runProgram("2.2 2.2 eq")
+        assertEquals(BoolVal(true), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("2.2 3.2 eq")
+        assertEquals(BoolVal(false), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test eq command with strings`() {
+        val ctx1 = runProgram("\"foo\" \"foo\" eq")
+        assertEquals(BoolVal(true), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("\"foo\" \"bar\" eq")
+        assertEquals(BoolVal(false), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test eq command with different types`() {
+        val ctx1 = runProgram("2.0 2 eq")
+        assertEquals(BoolVal(false), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("2 \"2\" eq")
+        assertEquals(BoolVal(false), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+
+        val ctx3 = runProgram("true \"true\" eq")
+        assertEquals(BoolVal(false), ctx3.stack.peek())
+        assertEquals(1, ctx3.stack.size)
+    }
 }
 
 class TestBoolCommands : InterpreterTest() {
