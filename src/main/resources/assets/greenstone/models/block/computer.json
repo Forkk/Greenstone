@@ -1,24 +1,8 @@
 {
-    "parent": "block/cube",
-    "display": {
-        "firstperson_righthand": {
-            "rotation": [ 0, 135, 0 ],
-            "translation": [ 0, 0, 0 ],
-            "scale": [ 0.40, 0.40, 0.40 ]
-        }
-    },
+    "parent": "block/orientable",
     "textures": {
+        "top": "greenstone:block/computer/top",
         "front": "greenstone:block/computer/front",
-        "back": "greenstone:block/computer/back",
-        "side": "greenstone:block/computer/side_without_port",
-        "port": "greenstone:block/computer/side_with_port",
-
-        "particle": "#front",
-        "down": "#side",
-        "up": "#side",
-        "north": "#front",
-        "east": "#port",
-        "south": "#back",
-        "west": "#port"
+        "side": "greenstone:block/computer/port"
     }
 }
