@@ -12,7 +12,7 @@ import net.forkk.greenstone.Greenstone
 import net.forkk.greenstone.grpl.Context
 import net.forkk.greenstone.grpl.ExecError
 import net.forkk.greenstone.grpl.GrplIO
-import net.forkk.greenstone.grpl.parse
+import net.forkk.greenstone.grpl.GrplParser
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -83,9 +83,9 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     private fun onTerminalInput(input: String) {
         printToTerminal(">$input\n")
         try {
-            data.context.exec(parse(input))
+            data.context.exec(GrplParser.parse(input))
         } catch (e: ExecError) {
-            printToTerminal("Error: ${e.message}\n")
+            printToTerminal("${e.prettyMsg()}\n")
         } catch (e: ParseException) {
             printToTerminal("Parse Error: ${e.message}\n")
         }

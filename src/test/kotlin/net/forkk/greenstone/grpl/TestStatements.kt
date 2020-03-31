@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 open class InterpreterTest {
     protected fun runProgram(prgmstr: String): Context {
-        val prgm = parse(prgmstr)
+        val prgm = GrplParser.parse(prgmstr)
         val ctx = Context()
         ctx.exec(prgm)
         return ctx
@@ -88,7 +88,7 @@ class TestStatements : InterpreterTest() {
 
     @Test fun `test named function declaration`() {
         val ctx = runProgram("fun@foo 42 end")
-        assertEquals(FunVal(listOf(LitStmt(IntVal(42)))), ctx.getVar("foo"))
+        assertEquals(FunVal(listOf(LitStmt(IntVal(42), TestSourceLocation()))), ctx.getVar("foo"))
         assertEquals(0, ctx.stack.size)
     }
 

@@ -17,7 +17,18 @@ class Context(private val extraCmds: CommandSet? = null) {
      */
     fun exec(stmts: List<Statement>) {
         for (stmt in stmts) {
-            stmt.exec(this)
+            try {
+                stmt.exec(this)
+            } catch (e: ExecError) {
+                // If there is an error executing the statement, tag the error with the statement's location information,
+                // and then throw it up the call stack.
+                // We ignore the location of things like `while` statements and `if` statements, as we are only really
+                // concerned with the location of the statements inside them.
+                if (stmt is LocatedStatement) {
+                    e.trace.tagLocation(stmt.location)
+                }
+                throw e
+            }
         }
     }
 

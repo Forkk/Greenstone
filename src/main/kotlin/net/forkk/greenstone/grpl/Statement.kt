@@ -3,20 +3,27 @@ package net.forkk.greenstone.grpl
 /**
  * Represents a statement that can be executed.
  */
-sealed class Statement {
+sealed class Statement() {
     /**
      * Executes this statement in the given context.
      */
     abstract fun exec(ctx: Context)
 }
 
+sealed class LocatedStatement : Statement() {
+    /**
+     * The location of this statement within the source code it was parsed from.
+     */
+    abstract val location: SourceLocation
+}
+
 /** Pushes a literal value */
-data class LitStmt(val value: Value) : Statement() {
+data class LitStmt(val value: Value, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) { ctx.stack.push(value) }
 }
 
 /** Pushes the value of a variable on the stack */
-data class LoadVarStmt(val name: String) : Statement() {
+data class LoadVarStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         val value = ctx.getVar(name)
         ctx.stack.push(value)
@@ -24,7 +31,7 @@ data class LoadVarStmt(val name: String) : Statement() {
 }
 
 /** Sets the value of a variable to the value on top of the stack. */
-data class StoreVarStmt(val name: String) : Statement() {
+data class StoreVarStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         val value = ctx.stack.pop()
         ctx.setVar(name, value)
@@ -32,7 +39,7 @@ data class StoreVarStmt(val name: String) : Statement() {
 }
 
 /** Executes a built-in command */
-data class CommandStmt(val cmdname: String) : Statement() {
+data class CommandStmt(val cmdname: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         val cmd = ctx.commands.get(cmdname)
         if (cmd == null) {
@@ -65,7 +72,10 @@ data class IfCondition(val cond: List<Statement>, val body: List<Statement>) {
  * The actual conditional statement. Contains one or more `IfCondition`s. The first represents the if condition, and
  * the rest represent elif conditions. There is also an optional body for an else clause.
  */
-data class IfStmt(val conds: List<IfCondition>, val else_: List<Statement>?) : Statement() {
+data class IfStmt(
+    val conds: List<IfCondition>,
+    val else_: List<Statement>?
+) : Statement() {
     override fun exec(ctx: Context) {
         for (cond in conds) {
             if (cond.exec(ctx)) {
@@ -81,7 +91,10 @@ data class IfStmt(val conds: List<IfCondition>, val else_: List<Statement>?) : S
 /**
  * A while loop statement. Executes `body` repeatedly as long as executing `cond` continues to push true on the stack.
  */
-data class WhileStmt(val cond: List<Statement>, val body: List<Statement>) : Statement() {
+data class WhileStmt(
+    val cond: List<Statement>,
+    val body: List<Statement>
+) : Statement() {
     override fun exec(ctx: Context) {
         while (true) {
             ctx.exec(cond)
@@ -113,7 +126,7 @@ data class FunStmt(val name: String, val body: List<Statement>) : Statement() {
  * A call to a function. If the "name" is empty, this calls the function value on top of the stack. If "name"
  * is a function name, calls the function stored in that variable name.
  */
-data class CallStmt(val name: String) : Statement() {
+data class CallStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         if (name.isEmpty()) {
             ctx.exec(ctx.stack.pop().asFun())
