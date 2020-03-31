@@ -218,6 +218,7 @@ object IDivCmd : Command("idiv") {
     override fun exec(ctx: Context) {
         val b = ctx.stack.pop().asIntOrErr()
         val a = ctx.stack.pop().asIntOrErr()
+        if (b == 0) throw ArithmeticError("Attempted to divide $a by 0.")
         ctx.stack.push(IntVal(a / b))
     }
 

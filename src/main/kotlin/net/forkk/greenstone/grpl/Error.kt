@@ -8,3 +8,4 @@ class TypeError(val value: Value, val expected: ValueType) : ExecError(
 )
 class UnknownCommandError(val name: String) : ExecError("There is no command named $name.")
 class UndefinedNameError(val name: String) : ExecError("Variable name $name is not defined.")
+class ArithmeticError(msg: String = "Invalid arithmetic operation") : ExecError(msg)
