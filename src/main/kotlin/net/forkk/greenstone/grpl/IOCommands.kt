@@ -71,9 +71,10 @@ class HelpCommand(private val io: GrplIO) : Command("help") {
                 io.println("There is no command called $name.")
             }
         } else {
-            io.println("List of available commands:")
-            val cmdlist = ctx.commands.list.joinToString { it.name }
-            io.println(cmdlist)
+            io.println("Available commands:")
+            for (cmd in ctx.commands.list) {
+                io.println("${cmd.name} - ${cmd.help.lines()[0]}")
+            }
             io.println("Type `\"command\" help` for information about a specific command.")
         }
     }

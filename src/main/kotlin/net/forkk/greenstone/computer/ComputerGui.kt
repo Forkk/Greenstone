@@ -2,8 +2,11 @@ package net.forkk.greenstone.computer
 
 import io.github.cottonmc.cotton.gui.client.CottonClientScreen
 import io.github.cottonmc.cotton.gui.client.LightweightGuiDescription
+import io.github.cottonmc.cotton.gui.widget.WClippedPanel
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel
+import io.github.cottonmc.cotton.gui.widget.WScrollBar
 import io.github.cottonmc.cotton.gui.widget.WTextField
+import io.github.cottonmc.cotton.gui.widget.data.Axis
 import io.netty.buffer.Unpooled
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.forkk.greenstone.Greenstone
@@ -18,7 +21,13 @@ class ComputerScreen(val gui: ComputerGui = ComputerGui()) : CottonClientScreen(
 }
 
 class ComputerGui() : LightweightGuiDescription() {
-    private val termWidget = WTerminal("Connecting...")
+    private val scrollWidget = object : WScrollBar(Axis.VERTICAL) {
+        init { this.setWindow(220) }
+        // Why is this false by default? Who wants a square, non-resizable scrollbar?
+        override fun canResize(): Boolean = true
+    }
+
+    private val termWidget = WTerminal("Connecting...", scrollWidget)
     private val textWidget = WLineEdit { input ->
         if (input.isNotBlank()) {
             sendInput(input)
@@ -29,10 +38,18 @@ class ComputerGui() : LightweightGuiDescription() {
         val root = WPlainPanel()
         setRootPanel(root)
         root.setSize(256, 240)
-        root.add(termWidget, 0, 0, 256, 220)
+
+        // Is this how you're meant to add children to a clipped panel? Probably not, but there seems to be no other way
+        val termPanel = object : WClippedPanel() {
+            init { children += termWidget }
+        }
+        termWidget.setSize(256, 220)
+        root.add(termPanel, 0, 0, 256, 220)
+
         root.add(textWidget, 0, 220, 256, 20)
+        root.add(scrollWidget, 248, 0, 8, 220)
+
         root.validate(this)
-        termWidget.requestFocus()
     }
 
     /**
