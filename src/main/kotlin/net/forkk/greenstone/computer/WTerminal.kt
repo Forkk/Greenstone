@@ -10,6 +10,9 @@ class WTerminal(initMsg: String) : WWidget() {
     /** Contains the contents of the screen. */
     private var screenBuf: String = initMsg
 
+    private val padding = 2 // 4 px padding each side
+    private val innerWidth: Int get() = width - padding * 2
+
     /**
      * Prints the given string to the terminal screen.
      */
@@ -42,19 +45,14 @@ class WTerminal(initMsg: String) : WWidget() {
      *
      * Lines are painted bottom to top, and this returns the y position of the top of the line.
      */
-    private fun paintLine(x: Int, starty: Int, str: String): Int {
+    private fun paintLine(outerx: Int, starty: Int, str: String): Int {
+        val x = outerx + padding
         var y = starty
-        val lines = MinecraftClient.getInstance().textRenderer.wrapStringToWidthAsList(str, width)
+        val lines = MinecraftClient.getInstance().textRenderer.wrapStringToWidthAsList(str, innerWidth)
         for (line in lines.reversed()) {
             ScreenDrawing.drawString(line, x, y, 0xFFFFFF)
             y -= LINE_HEIGHT
         }
         return y
-    }
-
-    /** Determine how many lines a given line will need for wrapping. */
-    private fun lineWrapCount(line: String): Int {
-        val lineWidth = MinecraftClient.getInstance().textRenderer.getStringWidth(line)
-        return lineWidth / width
     }
 }
