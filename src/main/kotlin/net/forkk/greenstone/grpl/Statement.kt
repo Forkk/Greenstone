@@ -1,8 +1,11 @@
 package net.forkk.greenstone.grpl
 
+import kotlinx.serialization.Serializable
+
 /**
  * Represents a statement that can be executed.
  */
+@Serializable
 sealed class Statement() {
     /**
      * Executes this statement in the given context.
@@ -10,6 +13,7 @@ sealed class Statement() {
     abstract fun exec(ctx: Context)
 }
 
+@Serializable
 sealed class LocatedStatement : Statement() {
     /**
      * The location of this statement within the source code it was parsed from.
@@ -18,11 +22,13 @@ sealed class LocatedStatement : Statement() {
 }
 
 /** Pushes a literal value */
+@Serializable
 data class LitStmt(val value: Value, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) { ctx.stack.push(value) }
 }
 
 /** Pushes the value of a variable on the stack */
+@Serializable
 data class LoadVarStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         val value = ctx.getVar(name)
@@ -31,6 +37,7 @@ data class LoadVarStmt(val name: String, override val location: SourceLocation) 
 }
 
 /** Sets the value of a variable to the value on top of the stack. */
+@Serializable
 data class StoreVarStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         val value = ctx.stack.pop()
@@ -39,6 +46,7 @@ data class StoreVarStmt(val name: String, override val location: SourceLocation)
 }
 
 /** Executes a built-in command */
+@Serializable
 data class CommandStmt(val cmdname: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         val cmd = ctx.commands.get(cmdname)
@@ -54,7 +62,7 @@ data class CommandStmt(val cmdname: String, override val location: SourceLocatio
  * An if or elif part of an if statement. The actual `IfStmt` contains a list of these
  * and an `else` block.
  */
-
+@Serializable
 data class IfCondition(val cond: List<Statement>, val body: List<Statement>) {
     /**
      * Runs the `cond` statements and, if true is left on the stack, runs `body` and returns true.
@@ -72,6 +80,7 @@ data class IfCondition(val cond: List<Statement>, val body: List<Statement>) {
  * The actual conditional statement. Contains one or more `IfCondition`s. The first represents the if condition, and
  * the rest represent elif conditions. There is also an optional body for an else clause.
  */
+@Serializable
 data class IfStmt(
     val conds: List<IfCondition>,
     val else_: List<Statement>?
@@ -91,6 +100,7 @@ data class IfStmt(
 /**
  * A while loop statement. Executes `body` repeatedly as long as executing `cond` continues to push true on the stack.
  */
+@Serializable
 data class WhileStmt(
     val cond: List<Statement>,
     val body: List<Statement>
@@ -112,6 +122,7 @@ data class WhileStmt(
  * literal pushes its function value on the stack, while a named function declaration stores the function value
  * in the variable given by the `name`.
  */
+@Serializable
 data class FunStmt(val name: String, val body: List<Statement>) : Statement() {
     override fun exec(ctx: Context) {
         if (name.isEmpty()) {
@@ -126,6 +137,7 @@ data class FunStmt(val name: String, val body: List<Statement>) : Statement() {
  * A call to a function. If the "name" is empty, this calls the function value on top of the stack. If "name"
  * is a function name, calls the function stored in that variable name.
  */
+@Serializable
 data class CallStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
     override fun exec(ctx: Context) {
         if (name.isEmpty()) {

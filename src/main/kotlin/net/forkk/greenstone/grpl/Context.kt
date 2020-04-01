@@ -3,14 +3,33 @@ package net.forkk.greenstone.grpl
 import kotlinx.serialization.Serializable
 
 /**
- * An execution context for a GRPL program. Contains the stack and variable store.
+ * Context data that gets saved in the world file. Commands are excluded, since they are re-initialized on loading.
  */
 @Serializable
-class Context(private val extraCmds: CommandSet? = null) {
-    private val vars = hashMapOf<String, Value>()
+data class ContextSaveData(
+    val vars: HashMap<String, Value>,
+    val stack: Stack
+) {
+    /**
+     * Takes a set of optional extra commands and initializes a new contexxt from this save state.
+     */
+    fun toContext(extraCmds: CommandSet? = null): Context {
+        return Context(extraCmds, vars, stack)
+    }
+}
 
+/**
+ * An execution context for a GRPL program. Contains the stack and variable store.
+ */
+class Context(
+    private val extraCmds: CommandSet? = null,
+    private val vars: HashMap<String, Value> = hashMapOf<String, Value>(),
+    val stack: Stack = Stack()
+) {
     val commands = baseCmds(extraCmds)
-    val stack = Stack()
+
+    /** Gets a save data object to store this context in the world file. */
+    val saveData: ContextSaveData get() = ContextSaveData(vars, stack)
 
     /**
      * Executes a list of statements in this context.

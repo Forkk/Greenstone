@@ -1,11 +1,13 @@
 package net.forkk.greenstone.grpl
 
 import com.github.h0tk3y.betterParse.lexer.TokenMatch
+import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.TestOnly
 
 /**
  * Source location for programs entered interactively, for example in the terminal or in a unit test.
  */
+@Serializable
 open class SourceLocation(val input: String, val pos: Pair<Int, Int>) {
     companion object {
         /**
@@ -57,6 +59,7 @@ open class SourceLocation(val input: String, val pos: Pair<Int, Int>) {
  * Used to test the parser results without worrying about `SourceLocation`s.
  */
 @TestOnly
+@Serializable
 class TestSourceLocation() : SourceLocation("", Pair(0, 0)) {
     override fun equals(other: Any?): Boolean {
         return other is SourceLocation

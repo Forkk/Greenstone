@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
 import net.forkk.greenstone.Greenstone
 import net.forkk.greenstone.grpl.Context
+import net.forkk.greenstone.grpl.ContextSaveData
 import net.forkk.greenstone.grpl.ExecError
 import net.forkk.greenstone.grpl.GrplIO
 import net.forkk.greenstone.grpl.GrplParser
@@ -20,8 +21,14 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.PacketByteBuf
 import net.minecraft.util.math.BlockPos
 
+/**
+ * Serializable data about a computer block entity that gets saved in the world.
+ */
 @Serializable
-data class ComputerData(var context: Context, var logs: String = "")
+data class ComputerSaveData(
+    val logs: String,
+    val context: ContextSaveData
+)
 
 class ComputerBlockEntity : BlockEntity(TYPE) {
     companion object {
@@ -65,16 +72,22 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     }
 
     private val openPlayers: ArrayList<PlayerEntity> = arrayListOf()
-    private var data = ComputerData(Context(ComputerIO(this).ioCommands()))
+    private var context: Context = Context(ComputerIO(this).ioCommands())
+    private var logs = ""
+
+    private val saveData: ComputerSaveData
+        get() = ComputerSaveData(this.logs, this.context.saveData)
 
     override fun toTag(tag: CompoundTag): CompoundTag {
-        ComputerData.serializer().put(data, inTag = tag)
+        ComputerSaveData.serializer().put(this.saveData, inTag = tag)
         return super.toTag(tag)
     }
 
     override fun fromTag(tag: CompoundTag) {
         super.fromTag(tag)
-        data = ComputerData.serializer().getFrom(tag)
+        val data = ComputerSaveData.serializer().getFrom(tag)
+        this.logs = data.logs
+        this.context = data.context.toContext(ComputerIO(this).ioCommands())
     }
 
     /**
@@ -83,7 +96,7 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     private fun onTerminalInput(input: String) {
         printToTerminal(">$input\n")
         try {
-            data.context.exec(GrplParser.parse(input))
+            context.exec(GrplParser.parse(input))
         } catch (e: ExecError) {
             printToTerminal("${e.prettyMsg()}\n")
         } catch (e: ParseException) {
@@ -109,7 +122,7 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
      * Prints a string to the terminal and alerts all clients with the GUI open.
      */
     fun printToTerminal(str: String) {
-        data.logs += str
+        logs += str
         openPlayers.forEach { player ->
             val passedData = PacketByteBuf(Unpooled.buffer())
             passedData.writeString(str)
@@ -126,15 +139,15 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
         }
 
         val passedData = PacketByteBuf(Unpooled.buffer())
-        passedData.writeString(data.logs)
+        passedData.writeString(this.logs)
         ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_CONTENTS, passedData)
     }
 
     fun clearTerminal() {
-        data.logs = ""
+        this.logs = ""
         for (player in openPlayers) {
             val passedData = PacketByteBuf(Unpooled.buffer())
-            passedData.writeString(data.logs)
+            passedData.writeString(this.logs)
             ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_CONTENTS, passedData)
         }
     }

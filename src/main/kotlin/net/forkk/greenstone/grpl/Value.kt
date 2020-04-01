@@ -48,6 +48,7 @@ fun floatIntCmpOp(
 /**
  * Used to represent the type of a value as a value.
  */
+@Serializable
 enum class ValueType {
     INT, FLOAT,
     STRING, LIST,
@@ -62,7 +63,9 @@ enum class ValueType {
  * within the language.
  */
 @Serializable
-sealed class Value(val type: ValueType) {
+sealed class Value(
+    val type: ValueType
+) {
     open fun isNull(): Boolean { return false }
 
     /** Checks if this value has the given type. */
@@ -111,33 +114,40 @@ sealed class Value(val type: ValueType) {
         get() = null
 }
 
+@Serializable
 object NullVal : Value(ValueType.NULL) {
     override fun isNull(): Boolean { return true }
 }
 
+@Serializable
 data class BoolVal(val v: Boolean) : Value(ValueType.BOOL) {
     override fun asBool(): Boolean? { return this.v }
 }
 
+@Serializable
 data class IntVal(val v: Int) : Value(ValueType.INT) {
     override fun asInt(): Int? { return this.v }
     override fun asFloat(): Double? { return this.v.toDouble() }
 }
+@Serializable
 data class FloatVal(val v: Double) : Value(ValueType.FLOAT) {
     override fun asFloat(): Double? { return this.v }
     override fun asInt(): Int? { return this.v.toInt() }
 }
 
+@Serializable
 data class StringVal(val v: String) : Value(ValueType.STRING) {
     override fun asString(): String = this.v
     override val length: Int? get() = v.length
 }
 
+@Serializable
 data class ListVal(val lst: List<Value>) : Value(ValueType.LIST) {
     override val length: Int?
         get() = lst.size
 }
 
+@Serializable
 data class FunVal(val body: List<Statement>) : Value(ValueType.FUN) {
     override fun asFun(): List<Statement> { return body }
 }
@@ -145,4 +155,5 @@ data class FunVal(val body: List<Statement>) : Value(ValueType.FUN) {
 /**
  * Represents the type of some value as a value.
  */
+@Serializable
 data class TypeVal(val t: ValueType) : Value(ValueType.TYPE)
