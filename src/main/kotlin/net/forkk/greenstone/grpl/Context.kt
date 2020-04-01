@@ -13,7 +13,7 @@ data class ContextSaveData(
     /**
      * Takes a set of optional extra commands and initializes a new contexxt from this save state.
      */
-    fun toContext(extraCmds: CommandSet? = null): Context {
+    fun toContext(extraCmds: List<CommandGroup> = listOf()): Context {
         return Context(extraCmds, vars, stack)
     }
 }
@@ -22,8 +22,8 @@ data class ContextSaveData(
  * An execution context for a GRPL program. Contains the stack and variable store.
  */
 class Context(
-    private val extraCmds: CommandSet? = null,
-    private val vars: HashMap<String, Value> = hashMapOf<String, Value>(),
+    extraCmds: List<CommandGroup> = listOf(),
+    private val vars: HashMap<String, Value> = hashMapOf(),
     val stack: Stack = Stack()
 ) {
     val commands = baseCmds(extraCmds)

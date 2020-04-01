@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
 import net.forkk.greenstone.Greenstone
+import net.forkk.greenstone.grpl.CommandGroup
 import net.forkk.greenstone.grpl.Context
 import net.forkk.greenstone.grpl.ContextSaveData
 import net.forkk.greenstone.grpl.ExecError
@@ -16,8 +17,10 @@ import net.forkk.greenstone.grpl.GrplIO
 import net.forkk.greenstone.grpl.GrplParser
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.MinecraftServer
 import net.minecraft.util.PacketByteBuf
 import net.minecraft.util.math.BlockPos
 
@@ -71,8 +74,10 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
         }
     }
 
+    private val extraCmds: List<CommandGroup> get() = listOf(ComputerIO(this).ioCommands())
+
     private val openPlayers: ArrayList<PlayerEntity> = arrayListOf()
-    private var context: Context = Context(ComputerIO(this).ioCommands())
+    private var context: Context = Context(this.extraCmds)
     private var logs = ""
 
     private val saveData: ComputerSaveData
@@ -87,7 +92,7 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
         super.fromTag(tag)
         val data = ComputerSaveData.serializer().getFrom(tag)
         this.logs = data.logs
-        this.context = data.context.toContext(ComputerIO(this).ioCommands())
+        this.context = data.context.toContext(this.extraCmds)
     }
 
     /**

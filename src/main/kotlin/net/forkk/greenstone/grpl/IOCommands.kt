@@ -16,9 +16,10 @@ interface GrplIO {
     fun clear()
 
     /**
-     * Generates a set of IO commands which will use this interface.
+     * Generates a group of IO commands which will use this interface.
      */
-    fun ioCommands(): CommandSet = CommandSet(
+    fun ioCommands(): CommandGroup = CommandGroup("io",
+        "Commands for terminal input/output",
         PrintCommand(this),
         ClearCommand(this),
         TraceCommand(this),
@@ -64,18 +65,32 @@ class HelpCommand(private val io: GrplIO) : Command("help") {
     override fun exec(ctx: Context) {
         if (ctx.stack.size > 0) {
             val name = ctx.stack.pop().asString()
-            val cmd = ctx.commands.get(name)
-            if (cmd != null) {
-                io.println(cmd.help)
+            if (name.startsWith('@')) {
+                val group = ctx.commands.getGroup(name.substring(1))
+                if (group != null) {
+                    for (cmd in group.commands) {
+                        io.println("${cmd.name} - ${cmd.help.lines()[0]}")
+                    }
+                    io.println("Type `\"command\" help` for detailed info about a specific command.")
+                } else {
+                    io.println("There is no help topic called $name.")
+                    io.println("Try something like this: \"@core\" help")
+                }
             } else {
-                io.println("There is no command called $name.")
+                val cmd = ctx.commands.get(name)
+                if (cmd != null) {
+                    io.println(cmd.help)
+                } else {
+                    io.println("There is no command called $name.")
+                }
             }
         } else {
-            io.println("Available commands:")
-            for (cmd in ctx.commands.list) {
-                io.println("${cmd.name} - ${cmd.help.lines()[0]}")
+            io.println("Available help topics:")
+            for (group in ctx.commands.iterGroups) {
+                io.println("${group.name} - ${group.help.lines()[0]}")
             }
-            io.println("Type `\"command\" help` for information about a specific command.")
+            io.println("Type `\"@topic\" help` for a list of commands in a specific category.")
+            io.println("Type `\"command\" help` for detailed info about a specific command.")
         }
     }
 

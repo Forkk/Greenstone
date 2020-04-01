@@ -1,32 +1,37 @@
 package net.forkk.greenstone.grpl
 
-import kotlinx.serialization.Serializable
-
 /**
  * Represents a set of built-in commands that the interpreter can use.
  */
-@Serializable
-class CommandSet {
-    constructor(vararg cmds: Command) {
-        cmds.forEach { c ->
-            this.map[c.name] = c
-        }
+class CommandSet(vararg group: CommandGroup) {
+    private var map = hashMapOf<String, Command>()
+    private var _groups = hashMapOf<String, CommandGroup>()
+
+    init {
+        group.forEach { addGroup(it) }
     }
 
-    private var map = hashMapOf<String, Command>()
-
+    /** Gets a command from the set. */
     fun get(name: String): Command? {
         return map[name]
     }
 
-    /**
-     * Adds commands to this set.
-     */
-    fun addCommands(vararg cmds: Command) {
-        cmds.forEach { c ->
+    /** Adds a new command group to this set. */
+    fun addGroup(group: CommandGroup) {
+        if (group.name in _groups) {
+            error("A command group named ${group.name} already exists")
+        }
+        _groups[group.name] = group
+        group.commands.forEach { c ->
             this.map[c.name] = c
         }
     }
+
+    /** Gets the command group with the given name. */
+    fun getGroup(name: String): CommandGroup? = _groups[name]
+
+    /** An iterator over the command groups. */
+    val iterGroups: Iterable<CommandGroup> get() = _groups.values
 
     /**
      * Merges another command set into this one.
@@ -45,20 +50,15 @@ class CommandSet {
  *
  * Theoretically we could allow other mods to extend this later.
  */
-fun baseCmds(extra: CommandSet? = null): CommandSet {
-    val cmdSet = CommandSet()
-    cmdSet.addCommands(PopCmd, DupCmd, SwapCmd)
-    cmdSet.addCommands(NotCmd, AndCmd, OrCmd)
-    cmdSet.addCommands(EqCmd, GtCmd, LtCmd)
-    cmdSet.addCommands(AddCmd, SubCmd, MulCmd, DivCmd, IDivCmd)
-    if (extra != null) cmdSet.merge(extra)
+fun baseCmds(extra: List<CommandGroup> = listOf()): CommandSet {
+    val cmdSet = CommandSet(CoreCommands, MathCommands)
+    extra.forEach { cmdSet.addGroup(it) }
     return cmdSet
 }
 
 /**
  * Represents a built-in command in the GRPL language.
  */
-@Serializable
 abstract class Command(val name: String) {
     /**
      * Executes this command in the given context.
@@ -68,6 +68,20 @@ abstract class Command(val name: String) {
     /** A string describing to the player how to use this command. */
     abstract val help: String
 }
+
+/**
+ * Represents a logical group of commands used to group commands when displayed in the help menu.
+ */
+class CommandGroup(val name: String, val help: String, vararg _cmds: Command) {
+    val commands = listOf<Command>(*_cmds)
+}
+
+
+val CoreCommands = CommandGroup("core",
+    "Core language commands for manipulating the stack, performing comparisons, etc.",
+    PopCmd, DupCmd, SwapCmd,
+    NotCmd, AndCmd, OrCmd, EqCmd
+)
 
 object PopCmd : Command("pop") {
     override fun exec(ctx: Context) { ctx.stack.pop() }
@@ -139,92 +153,4 @@ object EqCmd : Command("eq") {
                 "No type casting is done.\n" +
                 "Example: `2 2 eq` would push `true` on the stack, but `2.0 2 eq` will push `false`, as one value is " +
                 "an integer, while the other is a float."
-}
-object GtCmd : Command("gt") {
-    override fun exec(ctx: Context) {
-        val bv = ctx.stack.pop()
-        val av = ctx.stack.pop()
-        val result = floatIntCmpOp(av, bv, { a, b -> a > b }, { a, b -> a > b })
-        ctx.stack.push(result)
-    }
-
-    override val help: String
-        get() = "Pops two values, compares them, and pushes true if the top one is greater than the bottom one.\n" +
-                "Example: `2 3 gt` would leave `true` on the stack"
-}
-object LtCmd : Command("lt") {
-    override fun exec(ctx: Context) {
-        val bv = ctx.stack.pop()
-        val av = ctx.stack.pop()
-        val result = floatIntCmpOp(av, bv, { a, b -> a < b }, { a, b -> a < b })
-        ctx.stack.push(result)
-    }
-
-    override val help: String
-        get() = "Pops two values, compares them, and pushes true if the top one is less than the bottom one.\n" +
-                "Example: `3 2 lt` would leave `true` on the stack"
-}
-
-object AddCmd : Command("add") {
-    override fun exec(ctx: Context) {
-        val bv = ctx.stack.pop()
-        val av = ctx.stack.pop()
-        val result = floatIntBinOp(av, bv, { a, b -> a + b }, { a, b -> a + b })
-        ctx.stack.push(result)
-    }
-
-    override val help: String
-        get() = "Pops two values and pushes their sum.\n" +
-                "Raises a type error if the values are not numbers."
-}
-object SubCmd : Command("sub") {
-    override fun exec(ctx: Context) {
-        val bv = ctx.stack.pop()
-        val av = ctx.stack.pop()
-        val result = floatIntBinOp(av, bv, { a, b -> a - b }, { a, b -> a - b })
-        ctx.stack.push(result)
-    }
-
-    override val help: String
-        get() = "Pops two values and subtracts the top one from the bottom one.\n" +
-                "Example: if the stack is `a b` (a pushed first), this pushes a - b.\n" +
-                "Raises a type error if the values are not numbers."
-}
-object MulCmd : Command("mul") {
-    override fun exec(ctx: Context) {
-        val bv = ctx.stack.pop()
-        val av = ctx.stack.pop()
-        val result = floatIntBinOp(av, bv, { a, b -> a * b }, { a, b -> a * b })
-        ctx.stack.push(result)
-    }
-
-    override val help: String
-        get() = "Pops two values and pushes their product.\n" +
-                "Raises a type error if the values are not numbers."
-}
-object DivCmd : Command("div") {
-    override fun exec(ctx: Context) {
-        val b = ctx.stack.pop().asFloatOrErr()
-        val a = ctx.stack.pop().asFloatOrErr()
-        ctx.stack.push(FloatVal(a / b))
-    }
-
-    override val help: String
-        get() = "Pops two values and divides the bottom one by the top one.\n" +
-                "Example: if the stack is `a b` (a pushed first), this pushes a / b.\n" +
-                "Raises a type error if the values are not numbers."
-}
-object IDivCmd : Command("idiv") {
-    override fun exec(ctx: Context) {
-        val b = ctx.stack.pop().asIntOrErr()
-        val a = ctx.stack.pop().asIntOrErr()
-        if (b == 0) throw ArithmeticError("Attempted to divide $a by 0.")
-        ctx.stack.push(IntVal(a / b))
-    }
-
-    override val help: String
-        get() = "Pops two values and divides bottom by top using integer division. " +
-                "This means float values are cast to int, before division, and the returned value is an int.\n" +
-                "Example: if the stack is `a b` (a pushed first), this pushes a / b.\n" +
-                "Raises a type error if the values are not numbers."
 }
