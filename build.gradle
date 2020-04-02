@@ -39,14 +39,16 @@ dependencies {
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
     modImplementation "com.lettuce.fudge:fabric-drawer:3.2.0-1.15-pre1"
+    include "com.lettuce.fudge:fabric-drawer:3.2.0-1.15-pre1"
 
     modImplementation "io.github.cottonmc:LibGui:1.8.0+1.15.2"
-
+    include "io.github.cottonmc:LibGui:1.8.0+1.15.2"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
 
-    compile 'com.github.h0tk3y.betterParse:better-parse-jvm:0.4.0-alpha-3'
+    implementation 'com.github.h0tk3y.betterParse:better-parse-jvm:0.4.0-alpha-3'
+    include 'com.github.h0tk3y.betterParse:better-parse-jvm:0.4.0-alpha-3'
 }
 
 processResources {
