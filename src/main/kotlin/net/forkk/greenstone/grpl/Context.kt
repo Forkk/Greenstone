@@ -7,8 +7,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class ContextSaveData(
-    val vars: HashMap<String, Value>,
-    val stack: Stack
+    val vars: HashMap<String, Value> = HashMap(),
+    val stack: Stack = Stack()
 ) {
     /**
      * Takes a set of optional extra commands and initializes a new contexxt from this save state.

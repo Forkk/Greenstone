@@ -4,7 +4,6 @@ import com.github.h0tk3y.betterParse.parser.ParseException
 import drawer.getFrom
 import drawer.put
 import io.netty.buffer.Unpooled
-import java.util.function.Supplier
 import kotlinx.serialization.Serializable
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
@@ -17,20 +16,19 @@ import net.forkk.greenstone.grpl.GrplIO
 import net.forkk.greenstone.grpl.GrplParser
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.server.MinecraftServer
 import net.minecraft.util.PacketByteBuf
 import net.minecraft.util.math.BlockPos
+import java.util.function.Supplier
 
 /**
  * Serializable data about a computer block entity that gets saved in the world.
  */
 @Serializable
 data class ComputerSaveData(
-    val logs: String,
-    val context: ContextSaveData
+    val logs: String = "",
+    val context: ContextSaveData = ContextSaveData()
 )
 
 class ComputerBlockEntity : BlockEntity(TYPE) {
@@ -59,11 +57,13 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
                 error("Player ${player.name} tried to register an open terminal with non-computer block at $pos")
             }
         }
+
         fun handleGuiClose(player: PlayerEntity) {
             val be = openTerminalMap[player] ?: return
             be.openPlayers.remove(player)
             openTerminalMap.remove(player)
         }
+
         fun handleInput(player: PlayerEntity, input: String) {
             val block = openTerminalMap[player]
             if (block == null) {
@@ -106,6 +106,8 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
             printToTerminal("${e.prettyMsg()}\n")
         } catch (e: ParseException) {
             printToTerminal("Parse Error: ${e.message}\n")
+        } finally {
+            this.markDirty()
         }
     }
 

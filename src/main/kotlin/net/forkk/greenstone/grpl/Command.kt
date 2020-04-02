@@ -76,18 +76,22 @@ class CommandGroup(val name: String, val help: String, vararg _cmds: Command) {
     val commands = listOf<Command>(*_cmds)
 }
 
-
-val CoreCommands = CommandGroup("core",
+val CoreCommands = CommandGroup(
+    "core",
     "Core language commands for manipulating the stack, performing comparisons, etc.",
     PopCmd, DupCmd, SwapCmd,
     NotCmd, AndCmd, OrCmd, EqCmd
 )
 
 object PopCmd : Command("pop") {
-    override fun exec(ctx: Context) { ctx.stack.pop() }
+    override fun exec(ctx: Context) {
+        ctx.stack.pop()
+    }
+
     override val help: String
         get() = "Discards the item at the top of the stack."
 }
+
 object DupCmd : Command("dup") {
     override fun exec(ctx: Context) {
         val v = ctx.stack.pop()
@@ -98,6 +102,7 @@ object DupCmd : Command("dup") {
     override val help: String
         get() = "Duplicates the item at the top of the stack."
 }
+
 object SwapCmd : Command("swap") {
     override fun exec(ctx: Context) {
         val a = ctx.stack.pop()
@@ -119,6 +124,7 @@ object NotCmd : Command("not") {
     override val help: String
         get() = "Pops a boolean value and pushes the opposite."
 }
+
 object AndCmd : Command("and") {
     override fun exec(ctx: Context) {
         val a = ctx.stack.pop().asBoolOrErr()
@@ -129,6 +135,7 @@ object AndCmd : Command("and") {
     override val help: String
         get() = "Pops two values and pushes true if both are true, otherwise false."
 }
+
 object OrCmd : Command("or") {
     override fun exec(ctx: Context) {
         val a = ctx.stack.pop().asBoolOrErr()
@@ -149,8 +156,8 @@ object EqCmd : Command("eq") {
 
     override val help: String
         get() = "Pops two values, and pushes true if they are equal, false if they are not.\n" +
-                "Values are considered equal, if and only if their types and values are equal. " +
-                "No type casting is done.\n" +
-                "Example: `2 2 eq` would push `true` on the stack, but `2.0 2 eq` will push `false`, as one value is " +
-                "an integer, while the other is a float."
+            "Values are considered equal, if and only if their types and values are equal. " +
+            "No type casting is done.\n" +
+            "Example: `2 2 eq` would push `true` on the stack, but `2.0 2 eq` will push `false`, as one value is " +
+            "an integer, while the other is a float."
 }
