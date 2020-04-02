@@ -4,6 +4,7 @@ import com.github.h0tk3y.betterParse.parser.ParseException
 import drawer.getFrom
 import drawer.put
 import io.netty.buffer.Unpooled
+import java.util.function.Supplier
 import kotlinx.serialization.Serializable
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
@@ -20,7 +21,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.PacketByteBuf
 import net.minecraft.util.math.BlockPos
-import java.util.function.Supplier
 
 /**
  * Serializable data about a computer block entity that gets saved in the world.
