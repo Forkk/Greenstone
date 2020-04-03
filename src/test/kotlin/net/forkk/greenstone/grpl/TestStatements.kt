@@ -7,7 +7,7 @@ open class InterpreterTest {
     protected fun runProgram(prgmstr: String): Context {
         val prgm = GrplParser.parse(prgmstr)
         val ctx = Context()
-        ctx.exec(prgm)
+        ctx.execSync(prgm)
         return ctx
     }
 }

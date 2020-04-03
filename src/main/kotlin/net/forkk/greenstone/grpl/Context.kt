@@ -1,5 +1,7 @@
 package net.forkk.greenstone.grpl
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 
 /**
@@ -31,10 +33,24 @@ class Context(
     /** Gets a save data object to store this context in the world file. */
     val saveData: ContextSaveData get() = ContextSaveData(vars, stack)
 
+    private var delay = true
+
+    /**
+     * Executes a list of statements synchronously.
+     *
+     * This also executes without the built-in 10 ms delay between statements that is present in the interpreter.
+     *
+     * Used for unit testing.
+     */
+    fun execSync(stmts: List<Statement>) {
+        this.delay = false
+        try { runBlocking { exec(stmts) } } finally { this.delay = true }
+    }
+
     /**
      * Executes a list of statements in this context.
      */
-    fun exec(stmts: List<Statement>) {
+    suspend fun exec(stmts: List<Statement>) {
         for (stmt in stmts) {
             try {
                 stmt.exec(this)
@@ -48,6 +64,8 @@ class Context(
                 }
                 throw e
             }
+            // TODO: Implement proper speed limiting
+            if (this.delay) delay(10)
         }
     }
 

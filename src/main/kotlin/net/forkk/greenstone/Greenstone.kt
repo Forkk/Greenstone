@@ -33,7 +33,9 @@ object Greenstone : ModInitializer {
     val PACKET_TERMINAL_OPENED = Identifier("greenstone", "packet_terminal_opened")
     val PACKET_TERMINAL_CLOSED = Identifier("greenstone", "packet_terminal_closed")
     // Packet for when the user inputs something
-    val PACKET_TERMINAL_INPUT = Identifier("greenstone", "packet_terminal_output")
+    val PACKET_TERMINAL_INPUT = Identifier("greenstone", "packet_terminal_input")
+    // Packet for when the user interrupts the program with Ctrl+C.
+    val PACKET_TERMINAL_INTERRUPT = Identifier("greenstone", "packet_terminal_interrupt")
 
     // // Server -> Client packets
     // Packet for sending new terminal output
@@ -93,9 +95,16 @@ object Greenstone : ModInitializer {
         }
         ServerSidePacketRegistry.INSTANCE.register(
             PACKET_TERMINAL_CLOSED
-        ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+        ) { packetContext: PacketContext, _: PacketByteBuf ->
             packetContext.taskQueue.execute {
                 ComputerBlockEntity.handleGuiClose(packetContext.player)
+            }
+        }
+        ServerSidePacketRegistry.INSTANCE.register(
+            PACKET_TERMINAL_INTERRUPT
+        ) { packetContext: PacketContext, _: PacketByteBuf ->
+            packetContext.taskQueue.execute {
+                ComputerBlockEntity.handleInterrupt(packetContext.player)
             }
         }
     }

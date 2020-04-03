@@ -14,7 +14,7 @@ import net.minecraft.nbt.CompoundTag
 class TestSerialization {
     @Test fun `test saving and loading context save data`() {
         val ctx = Context()
-        ctx.exec(GrplParser.parse("42 >a 27 >b 13"))
+        ctx.execSync(GrplParser.parse("42 >a 27 >b 13"))
 
         // Save the context to an NBT tag and then load it again.
         val tag = CompoundTag()
@@ -30,7 +30,7 @@ class TestSerialization {
 
     @Test fun `test saving and loading computer save data`() {
         val ctx = Context()
-        ctx.exec(GrplParser.parse("42 >a 27 >b 13"))
+        ctx.execSync(GrplParser.parse("42 >a 27 >b 13"))
         val dat = ComputerSaveData("Test logs", ctx.saveData)
 
         // Save the data to an NBT tag and then load it again.

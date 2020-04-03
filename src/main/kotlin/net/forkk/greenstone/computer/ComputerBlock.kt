@@ -60,4 +60,15 @@ class ComputerBlock : HorizontalFacingBlock(Settings.copy(Blocks.IRON_BLOCK)), B
         }
         return ActionResult.SUCCESS
     }
+
+    override fun onBreak(world: World?, pos: BlockPos?, state: BlockState?, player: PlayerEntity?) {
+        if (world?.isClient != true) {
+            val be = world!!.getBlockEntity(pos)
+            if (be != null && be is ComputerBlockEntity) {
+                // Tell the server that we're listening for terminal output
+                be.interruptProgram()
+            }
+        }
+        return super.onBreak(world, pos, state, player)
+    }
 }

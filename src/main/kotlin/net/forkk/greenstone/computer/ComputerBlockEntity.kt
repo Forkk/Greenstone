@@ -5,6 +5,11 @@ import drawer.getFrom
 import drawer.put
 import io.netty.buffer.Unpooled
 import java.util.function.Supplier
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
@@ -72,6 +77,15 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
                 block.onTerminalInput(input)
             }
         }
+
+        fun handleInterrupt(player: PlayerEntity) {
+            val block = openTerminalMap[player]
+            if (block == null) {
+                error("Player sent interrupt to a terminal, but they are not registered with one.")
+            } else {
+                block.interruptProgram()
+            }
+        }
     }
 
     private val extraCmds: List<CommandGroup> get() = listOf(ComputerIO(this).ioCommands())
@@ -79,6 +93,8 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     private val openPlayers: ArrayList<PlayerEntity> = arrayListOf()
     private var context: Context = Context(this.extraCmds)
     private var logs = ""
+    /** The currently running job. Terminal input not allowed unless this is null */
+    private var currentJob: Job? = null
 
     private val saveData: ComputerSaveData
         get() = ComputerSaveData(this.logs, this.context.saveData)
@@ -99,30 +115,41 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
      * Called when the player types input into this terminal.
      */
     private fun onTerminalInput(input: String) {
-        printToTerminal(">$input\n")
-        try {
-            context.exec(GrplParser.parse(input))
-        } catch (e: ExecError) {
-            printToTerminal("${e.prettyMsg()}\n")
-        } catch (e: ParseException) {
-            printToTerminal("Parse Error: ${e.message}\n")
-        } finally {
-            this.markDirty()
+        if (currentJob?.isActive != true) {
+            printToTerminal(">$input\n")
+            startJob(input)
         }
     }
 
     /**
-     * Client-side only. Sends the terminal open packet to the server
-     *
-     * This will cause the server to start sending terminal output
+     * Stops the currently running program.
      */
-    fun openTerminal() {
-        if (!world!!.isClient()) {
-            error("Called openTerminal on serverside")
+    fun interruptProgram() {
+        if (currentJob?.isActive == true) {
+            currentJob?.cancel()
         }
-        val packetBuf = PacketByteBuf(Unpooled.buffer())
-        packetBuf.writeBlockPos(this.pos)
-        ClientSidePacketRegistry.INSTANCE.sendToServer(Greenstone.PACKET_TERMINAL_OPENED, packetBuf)
+    }
+
+    /**
+     * Starts executing a user's input asynchronously. Further input is blocked until this completes.
+     */
+    private fun startJob(input: String) {
+        currentJob = GlobalScope.launch {
+            try {
+                context.exec(GrplParser.parse(input))
+            } catch (e: ExecError) {
+                world!!.server!!.execute { printToTerminal("${e.prettyMsg()}\n") }
+            } catch (e: ParseException) {
+                world!!.server!!.execute { printToTerminal("Parse Error: ${e.message}\n") }
+            } catch (e: CancellationException) {
+                world!!.server!!.execute { printToTerminal("Program Interrupted\n") }
+            } finally {
+                world!!.server!!.execute {
+                    markDirty()
+                    currentJob = null
+                }
+            }
+        }
     }
 
     /**
@@ -150,6 +177,11 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
         ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_CONTENTS, passedData)
     }
 
+    /**
+     * Clears terminal logs.
+     *
+     * Also sends a `TERMINAL_CONTENTS` packet to all players watching the logs, which clears their log windows.
+     */
     fun clearTerminal() {
         this.logs = ""
         for (player in openPlayers) {
@@ -158,14 +190,28 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
             ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_CONTENTS, passedData)
         }
     }
+
+    /**
+     * Client-side only. Sends the terminal open packet to the server
+     *
+     * This will cause the server to start sending terminal output
+     */
+    fun openTerminal() {
+        if (!world!!.isClient()) {
+            error("Called openTerminal on serverside")
+        }
+        val packetBuf = PacketByteBuf(Unpooled.buffer())
+        packetBuf.writeBlockPos(this.pos)
+        ClientSidePacketRegistry.INSTANCE.sendToServer(Greenstone.PACKET_TERMINAL_OPENED, packetBuf)
+    }
 }
 
 class ComputerIO(private val block: ComputerBlockEntity) : GrplIO {
-    override fun print(str: String) {
+    override fun print(str: String) = block.world!!.server!!.execute {
         block.printToTerminal(str)
     }
 
-    override fun clear() {
+    override fun clear() = block.world!!.server!!.execute {
         block.clearTerminal()
     }
 }

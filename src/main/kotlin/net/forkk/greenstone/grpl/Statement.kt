@@ -10,7 +10,7 @@ sealed class Statement() {
     /**
      * Executes this statement in the given context.
      */
-    abstract fun exec(ctx: Context)
+    abstract suspend fun exec(ctx: Context)
 }
 
 @Serializable
@@ -24,13 +24,13 @@ sealed class LocatedStatement : Statement() {
 /** Pushes a literal value */
 @Serializable
 data class LitStmt(val value: Value, override val location: SourceLocation) : LocatedStatement() {
-    override fun exec(ctx: Context) { ctx.stack.push(value) }
+    override suspend fun exec(ctx: Context) { ctx.stack.push(value) }
 }
 
 /** Pushes the value of a variable on the stack */
 @Serializable
 data class LoadVarStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
-    override fun exec(ctx: Context) {
+    override suspend fun exec(ctx: Context) {
         val value = ctx.getVar(name)
         ctx.stack.push(value)
     }
@@ -39,7 +39,7 @@ data class LoadVarStmt(val name: String, override val location: SourceLocation) 
 /** Sets the value of a variable to the value on top of the stack. */
 @Serializable
 data class StoreVarStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
-    override fun exec(ctx: Context) {
+    override suspend fun exec(ctx: Context) {
         val value = ctx.stack.pop()
         ctx.setVar(name, value)
     }
@@ -48,7 +48,7 @@ data class StoreVarStmt(val name: String, override val location: SourceLocation)
 /** Executes a built-in command */
 @Serializable
 data class CommandStmt(val cmdname: String, override val location: SourceLocation) : LocatedStatement() {
-    override fun exec(ctx: Context) {
+    override suspend fun exec(ctx: Context) {
         val cmd = ctx.commands.get(cmdname)
         if (cmd == null) {
             throw UnknownCommandError(cmdname)
@@ -67,7 +67,7 @@ data class IfCondition(val cond: List<Statement>, val body: List<Statement>) {
     /**
      * Runs the `cond` statements and, if true is left on the stack, runs `body` and returns true.
      */
-    fun exec(ctx: Context): Boolean {
+    suspend fun exec(ctx: Context): Boolean {
         ctx.exec(cond)
         return if (ctx.stack.pop().asBoolOrErr()) {
             ctx.exec(body)
@@ -85,7 +85,7 @@ data class IfStmt(
     val conds: List<IfCondition>,
     val else_: List<Statement>?
 ) : Statement() {
-    override fun exec(ctx: Context) {
+    override suspend fun exec(ctx: Context) {
         for (cond in conds) {
             if (cond.exec(ctx)) {
                 return
@@ -105,7 +105,7 @@ data class WhileStmt(
     val cond: List<Statement>,
     val body: List<Statement>
 ) : Statement() {
-    override fun exec(ctx: Context) {
+    override suspend fun exec(ctx: Context) {
         while (true) {
             ctx.exec(cond)
             if (ctx.stack.pop().asBoolOrErr()) {
@@ -124,7 +124,7 @@ data class WhileStmt(
  */
 @Serializable
 data class FunStmt(val name: String, val body: List<Statement>) : Statement() {
-    override fun exec(ctx: Context) {
+    override suspend fun exec(ctx: Context) {
         if (name.isEmpty()) {
             ctx.stack.push(FunVal(body))
         } else {
@@ -139,7 +139,7 @@ data class FunStmt(val name: String, val body: List<Statement>) : Statement() {
  */
 @Serializable
 data class CallStmt(val name: String, override val location: SourceLocation) : LocatedStatement() {
-    override fun exec(ctx: Context) {
+    override suspend fun exec(ctx: Context) {
         if (name.isEmpty()) {
             ctx.exec(ctx.stack.pop().asFun())
         } else {

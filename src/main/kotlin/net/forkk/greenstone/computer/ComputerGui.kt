@@ -28,11 +28,11 @@ class ComputerGui() : LightweightGuiDescription() {
     }
 
     private val termWidget = WTerminal("Connecting...", scrollWidget)
-    private val textWidget = WLineEdit { input ->
+    private val textWidget = WLineEdit({ this.interrupt() }, { input ->
         if (input.isNotBlank()) {
             sendInput(input)
         }
-    }
+    })
 
     init {
         val root = WPlainPanel()
@@ -62,6 +62,14 @@ class ComputerGui() : LightweightGuiDescription() {
     }
 
     /**
+     * Sends the server an interrupt signal.
+     */
+    fun interrupt() {
+        val packetBuf = PacketByteBuf(Unpooled.buffer())
+        ClientSidePacketRegistry.INSTANCE.sendToServer(Greenstone.PACKET_TERMINAL_INTERRUPT, packetBuf)
+    }
+
+    /**
      * Tells the server the GUI is closed.
      */
     fun onClose() {
@@ -84,7 +92,10 @@ class ComputerGui() : LightweightGuiDescription() {
     }
 }
 
-class WLineEdit(private val enterCallback: (String) -> Unit) : WTextField() {
+class WLineEdit(
+    private val interruptCallback: () -> Unit,
+    private val enterCallback: (String) -> Unit
+) : WTextField() {
     init {
         maxLength = 120
     }
@@ -94,6 +105,8 @@ class WLineEdit(private val enterCallback: (String) -> Unit) : WTextField() {
         if (modifiers == 0 && ch == GLFW.GLFW_KEY_ENTER) {
             this.enterCallback(this.text)
             this.text = ""
+        } else if (modifiers == GLFW.GLFW_MOD_CONTROL && ch == GLFW.GLFW_KEY_C) {
+            this.interruptCallback()
         }
     }
 }
