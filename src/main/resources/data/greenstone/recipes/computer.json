@@ -1,0 +1,26 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "###",
+        "#G#",
+        "DBD"
+    ],
+    "key": {
+        "#": {
+            "item": "minecraft:stone"
+        },
+        "G": {
+            "item": "minecraft:glass_pane"
+        },
+        "D": {
+            "item": "greenstone:greenstone_dust"
+        },
+        "B": {
+            "item": "greenstone:greenstone_block"
+        }
+    },
+    "result": {
+        "item": "greenstone:computer",
+        "count": 1
+    }
+}
