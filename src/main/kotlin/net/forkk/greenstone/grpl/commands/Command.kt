@@ -59,6 +59,7 @@ fun baseCmds(extra: List<CommandGroup> = listOf()): CommandSet {
     val cmdSet = CommandSet(
         CoreCommands,
         MathCommands,
+        ListCommands,
         TypeCommands
     )
     extra.forEach { cmdSet.addGroup(it) }
@@ -91,6 +92,7 @@ val CoreCommands = CommandGroup(
     PopCmd,
     DupCmd,
     SwapCmd,
+    LenCmd,
     NotCmd,
     AndCmd,
     OrCmd,

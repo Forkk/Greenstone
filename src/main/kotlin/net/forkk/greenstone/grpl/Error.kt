@@ -12,12 +12,17 @@ abstract class ExecError(msg: String) : Exception(msg) {
     }
 }
 
-class EmptyStackError() : ExecError("Tried to pop empty stack")
+private fun typeErrMsg(value: Value, expected: Array<ValueType>): String {
+    val expectedLst = expected.joinToString(", ")
+    return "Expected type $expectedLst, but value $value had type ${value.type}."
+}
 class TypeError(val value: Value, val expected: Array<ValueType>) : ExecError(
-    "Expected type $expected, but value $value had type ${value.type}."
+    typeErrMsg(value, expected)
 ) {
     constructor(value: Value, expected: ValueType) : this(value, arrayOf(expected))
 }
+
+class EmptyStackError() : ExecError("Tried to pop empty stack")
 class UnknownCommandError(val name: String) : ExecError("There is no command named $name.")
 class UndefinedNameError(val name: String) : ExecError("Variable name $name is not defined.")
 class ArithmeticError(msg: String = "Invalid arithmetic operation") : ExecError(msg)

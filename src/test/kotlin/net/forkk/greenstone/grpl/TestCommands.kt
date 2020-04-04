@@ -154,6 +154,45 @@ class TestTypeCommands : InterpreterTest() {
     }
 }
 
+class TestListcommands : InterpreterTest() {
+    @Test fun `test newlist command`() {
+        val ctx1 = runProgram("newlist")
+        assertEquals(ListVal(listOf()), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test tolist command`() {
+        val ctx1 = runProgram("newlist 1 2 3 tolist")
+        assertEquals(ListVal(listOf(
+            IntVal(1), IntVal(2), IntVal(3)
+        )), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test tolist doesn't consume past list object`() {
+        val ctx1 = runProgram("1 newlist 1 2 3 tolist")
+        assertEquals(2, ctx1.stack.size)
+        assertEquals(ListVal(listOf(
+            IntVal(1), IntVal(2), IntVal(3)
+        )), ctx1.stack.pop())
+        assertEquals(IntVal(1), ctx1.stack.pop())
+    }
+
+    @Test fun `test list length`() {
+        val ctx1 = runProgram("newlist 1 2 3 tolist len")
+        assertEquals(IntVal(3), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test list append`() {
+        val ctx1 = runProgram("newlist 1 2 3 tolist 4 append")
+        assertEquals(ListVal(listOf(
+            IntVal(1), IntVal(2), IntVal(3), IntVal(4)
+        )), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+}
+
 class TestBoolCommands : InterpreterTest() {
     @Test fun `test not command`() {
         val ctx1 = runProgram("true not")

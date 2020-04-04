@@ -154,8 +154,7 @@ data class StringVal(val v: String) : Value(ValueType.STRING) {
 
 @Serializable
 data class ListVal(val lst: List<Value>) : Value(ValueType.LIST) {
-    override val length: Int?
-        get() = lst.size
+    override val length: Int? get() = lst.size
     override fun displayStr(): String = this.lst.toString()
 }
 
