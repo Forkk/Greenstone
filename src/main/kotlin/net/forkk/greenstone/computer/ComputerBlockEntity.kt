@@ -8,18 +8,17 @@ import java.util.function.Supplier
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
 import net.forkk.greenstone.Greenstone
-import net.forkk.greenstone.grpl.CommandGroup
 import net.forkk.greenstone.grpl.Context
 import net.forkk.greenstone.grpl.ContextSaveData
 import net.forkk.greenstone.grpl.ExecError
-import net.forkk.greenstone.grpl.GrplIO
 import net.forkk.greenstone.grpl.GrplParser
+import net.forkk.greenstone.grpl.commands.CommandGroup
+import net.forkk.greenstone.grpl.commands.GrplIO
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -206,7 +205,8 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     }
 }
 
-class ComputerIO(private val block: ComputerBlockEntity) : GrplIO {
+class ComputerIO(private val block: ComputerBlockEntity) :
+    GrplIO {
     override fun print(str: String) = block.world!!.server!!.execute {
         block.printToTerminal(str)
     }

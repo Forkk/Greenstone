@@ -66,6 +66,94 @@ class TestCommands : InterpreterTest() {
     }
 }
 
+class TestTypeCommands : InterpreterTest() {
+    @Test fun `test int cast from int`() {
+        val ctx1 = runProgram("42 int")
+        assertEquals(IntVal(42), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test int cast from float`() {
+        val ctx1 = runProgram("42.2 int")
+        assertEquals(IntVal(42), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("42.0 int")
+        assertEquals(IntVal(42), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test int cast from string`() {
+        val ctx1 = runProgram("\"-42\" int")
+        assertEquals(IntVal(-42), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("\"a\" int")
+        assertEquals(NullVal, ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+
+        val ctx3 = runProgram("\"42.2\" int")
+        assertEquals(NullVal, ctx3.stack.peek())
+        assertEquals(1, ctx3.stack.size)
+    }
+
+    @Test fun `test float cast from float`() {
+        val ctx1 = runProgram("42.2 float")
+        assertEquals(FloatVal(42.2), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test float cast from int`() {
+        val ctx1 = runProgram("42 float")
+        assertEquals(FloatVal(42.0), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test float cast from string`() {
+        val ctx1 = runProgram("\"-42.2\" float")
+        assertEquals(FloatVal(-42.2), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("\"a\" float")
+        assertEquals(NullVal, ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test null to string`() {
+        val ctx1 = runProgram("null str")
+        assertEquals(StringVal("null"), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test int to string`() {
+        val ctx1 = runProgram("42 str")
+        assertEquals(StringVal("42"), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test float to string`() {
+        val ctx1 = runProgram("42.2 str")
+        assertEquals(StringVal("42.2"), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test bool to string`() {
+        val ctx1 = runProgram("true str")
+        assertEquals(StringVal("true"), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+
+        val ctx2 = runProgram("false str")
+        assertEquals(StringVal("false"), ctx2.stack.peek())
+        assertEquals(1, ctx2.stack.size)
+    }
+
+    @Test fun `test string to string`() {
+        val ctx1 = runProgram("\"foo\" str")
+        assertEquals(StringVal("foo"), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+}
+
 class TestBoolCommands : InterpreterTest() {
     @Test fun `test not command`() {
         val ctx1 = runProgram("true not")

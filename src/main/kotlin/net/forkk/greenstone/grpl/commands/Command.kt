@@ -1,4 +1,7 @@
-package net.forkk.greenstone.grpl
+package net.forkk.greenstone.grpl.commands
+
+import net.forkk.greenstone.grpl.BoolVal
+import net.forkk.greenstone.grpl.Context
 
 /**
  * Represents a set of built-in commands that the interpreter can use.
@@ -48,10 +51,16 @@ class CommandSet(vararg group: CommandGroup) {
 /**
  * The default set of built in commands.
  *
- * Theoretically we could allow other mods to extend this later.
+ * These represent the basic set of commands needed to use the language.
+ *
+ * @param extra allows the set of commands to be easily extended
  */
 fun baseCmds(extra: List<CommandGroup> = listOf()): CommandSet {
-    val cmdSet = CommandSet(CoreCommands, MathCommands)
+    val cmdSet = CommandSet(
+        CoreCommands,
+        MathCommands,
+        TypeCommands
+    )
     extra.forEach { cmdSet.addGroup(it) }
     return cmdSet
 }
@@ -79,8 +88,13 @@ class CommandGroup(val name: String, val help: String, vararg _cmds: Command) {
 val CoreCommands = CommandGroup(
     "core",
     "Core language commands for manipulating the stack, performing comparisons, etc.",
-    PopCmd, DupCmd, SwapCmd,
-    NotCmd, AndCmd, OrCmd, EqCmd
+    PopCmd,
+    DupCmd,
+    SwapCmd,
+    NotCmd,
+    AndCmd,
+    OrCmd,
+    EqCmd
 )
 
 object PopCmd : Command("pop") {

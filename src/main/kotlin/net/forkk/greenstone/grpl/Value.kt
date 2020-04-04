@@ -105,6 +105,12 @@ sealed class Value(
         throw TypeError(this, ValueType.STRING)
     }
 
+    /** Like `toString`, but shows the "display" representation of the value.
+     *
+     * For example, for the int 1, this will return "1" instead of "IntVal(v=1)".
+     */
+    abstract fun displayStr(): String
+
     /**
      * The length of this value if it can be considered to have a length (for example, if it is a string or list).
      *
@@ -117,43 +123,53 @@ sealed class Value(
 @Serializable
 object NullVal : Value(ValueType.NULL) {
     override fun isNull(): Boolean { return true }
+    override fun displayStr(): String = "null"
 }
 
 @Serializable
 data class BoolVal(val v: Boolean) : Value(ValueType.BOOL) {
     override fun asBool(): Boolean? { return this.v }
+    override fun displayStr(): String = this.v.toString()
 }
 
 @Serializable
 data class IntVal(val v: Int) : Value(ValueType.INT) {
     override fun asInt(): Int? { return this.v }
     override fun asFloat(): Double? { return this.v.toDouble() }
+    override fun displayStr(): String = this.v.toString()
 }
 @Serializable
 data class FloatVal(val v: Double) : Value(ValueType.FLOAT) {
     override fun asFloat(): Double? { return this.v }
     override fun asInt(): Int? { return this.v.toInt() }
+    override fun displayStr(): String = this.v.toString()
 }
 
 @Serializable
 data class StringVal(val v: String) : Value(ValueType.STRING) {
     override fun asString(): String = this.v
     override val length: Int? get() = v.length
+    override fun displayStr(): String = this.v
 }
 
 @Serializable
 data class ListVal(val lst: List<Value>) : Value(ValueType.LIST) {
     override val length: Int?
         get() = lst.size
+    override fun displayStr(): String = this.lst.toString()
 }
 
 @Serializable
 data class FunVal(val body: List<Statement>) : Value(ValueType.FUN) {
     override fun asFun(): List<Statement> { return body }
+    override fun displayStr(): String = "fun"
+    override fun toString(): String = "FunVal(body=...)"
 }
 
 /**
  * Represents the type of some value as a value.
  */
 @Serializable
-data class TypeVal(val t: ValueType) : Value(ValueType.TYPE)
+data class TypeVal(val t: ValueType) : Value(ValueType.TYPE) {
+    override fun displayStr(): String = this.t.toString()
+}

@@ -1,4 +1,7 @@
-package net.forkk.greenstone.grpl
+package net.forkk.greenstone.grpl.commands
+
+import net.forkk.greenstone.grpl.Context
+import net.forkk.greenstone.grpl.ValueType
 
 /**
  * This interface is used to specify how a set of IO commands should actually input or output their data.
@@ -18,13 +21,15 @@ interface GrplIO {
     /**
      * Generates a group of IO commands which will use this interface.
      */
-    fun ioCommands(): CommandGroup = CommandGroup("io",
-        "Commands for terminal input/output",
-        PrintCommand(this),
-        ClearCommand(this),
-        TraceCommand(this),
-        HelpCommand(this)
-    )
+    fun ioCommands(): CommandGroup =
+        CommandGroup(
+            "io",
+            "Commands for terminal input/output",
+            PrintCommand(this),
+            ClearCommand(this),
+            TraceCommand(this),
+            HelpCommand(this)
+        )
 }
 
 class PrintCommand(private val io: GrplIO) : Command("print") {
@@ -33,7 +38,7 @@ class PrintCommand(private val io: GrplIO) : Command("print") {
         val str = if (v.isType(ValueType.STRING)) {
             v.asString()
         } else {
-            v.toString()
+            v.displayStr()
         }
         io.println(str)
     }
@@ -48,7 +53,7 @@ class ClearCommand(private val io: GrplIO) : Command("clear") {
     }
 
     override val help: String
-        get() = "Pops a value off the top of the stack and prints it to the terminal."
+        get() = "Clears the terminal screen."
 }
 
 class TraceCommand(private val io: GrplIO) : Command("trace") {

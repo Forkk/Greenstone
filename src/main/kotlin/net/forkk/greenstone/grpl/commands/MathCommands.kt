@@ -1,17 +1,30 @@
-package net.forkk.greenstone.grpl
+package net.forkk.greenstone.grpl.commands
 
-val MathCommands = CommandGroup("math",
+import net.forkk.greenstone.grpl.ArithmeticError
+import net.forkk.greenstone.grpl.Context
+import net.forkk.greenstone.grpl.FloatVal
+import net.forkk.greenstone.grpl.IntVal
+import net.forkk.greenstone.grpl.floatIntBinOp
+import net.forkk.greenstone.grpl.floatIntCmpOp
+
+val MathCommands = CommandGroup(
+    "math",
     "Commands for mathematical operations",
-    GtCmd, LtCmd,
-    AddCmd, SubCmd,
-    MulCmd, DivCmd, IDivCmd
+    GtCmd,
+    LtCmd,
+    AddCmd,
+    SubCmd,
+    MulCmd,
+    DivCmd,
+    IDivCmd
 )
 
 object GtCmd : Command("gt") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
         val av = ctx.stack.pop()
-        val result = floatIntCmpOp(av, bv, { a, b -> a > b }, { a, b -> a > b })
+        val result =
+            floatIntCmpOp(av, bv, { a, b -> a > b }, { a, b -> a > b })
         ctx.stack.push(result)
     }
 
@@ -23,7 +36,8 @@ object LtCmd : Command("lt") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
         val av = ctx.stack.pop()
-        val result = floatIntCmpOp(av, bv, { a, b -> a < b }, { a, b -> a < b })
+        val result =
+            floatIntCmpOp(av, bv, { a, b -> a < b }, { a, b -> a < b })
         ctx.stack.push(result)
     }
 
@@ -36,7 +50,8 @@ object AddCmd : Command("add") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
         val av = ctx.stack.pop()
-        val result = floatIntBinOp(av, bv, { a, b -> a + b }, { a, b -> a + b })
+        val result =
+            floatIntBinOp(av, bv, { a, b -> a + b }, { a, b -> a + b })
         ctx.stack.push(result)
     }
 
@@ -48,7 +63,8 @@ object SubCmd : Command("sub") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
         val av = ctx.stack.pop()
-        val result = floatIntBinOp(av, bv, { a, b -> a - b }, { a, b -> a - b })
+        val result =
+            floatIntBinOp(av, bv, { a, b -> a - b }, { a, b -> a - b })
         ctx.stack.push(result)
     }
 
@@ -61,7 +77,8 @@ object MulCmd : Command("mul") {
     override fun exec(ctx: Context) {
         val bv = ctx.stack.pop()
         val av = ctx.stack.pop()
-        val result = floatIntBinOp(av, bv, { a, b -> a * b }, { a, b -> a * b })
+        val result =
+            floatIntBinOp(av, bv, { a, b -> a * b }, { a, b -> a * b })
         ctx.stack.push(result)
     }
 

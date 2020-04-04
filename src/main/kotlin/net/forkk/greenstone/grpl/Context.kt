@@ -3,6 +3,8 @@ package net.forkk.greenstone.grpl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import net.forkk.greenstone.grpl.commands.CommandGroup
+import net.forkk.greenstone.grpl.commands.baseCmds
 
 /**
  * Context data that gets saved in the world file. Commands are excluded, since they are re-initialized on loading.
