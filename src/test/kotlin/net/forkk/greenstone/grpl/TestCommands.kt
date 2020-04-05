@@ -184,8 +184,30 @@ class TestListcommands : InterpreterTest() {
         assertEquals(1, ctx1.stack.size)
     }
 
+    @Test fun `test list get`() {
+        val ctx1 = runProgram("newlist 1 2 3 tolist 1 listget")
+        assertEquals(IntVal(2), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test list remove`() {
+        val ctx1 = runProgram("newlist 1 2 3 tolist 1 listrm")
+        assertEquals(ListVal(listOf(
+            IntVal(1), IntVal(3)
+        )), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test list insert`() {
+        val ctx1 = runProgram("newlist 1 2 3 tolist 4 1 listinsert")
+        assertEquals(ListVal(listOf(
+            IntVal(1), IntVal(4), IntVal(2), IntVal(3)
+        )), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
     @Test fun `test list append`() {
-        val ctx1 = runProgram("newlist 1 2 3 tolist 4 append")
+        val ctx1 = runProgram("newlist 1 2 3 tolist 4 listappend")
         assertEquals(ListVal(listOf(
             IntVal(1), IntVal(2), IntVal(3), IntVal(4)
         )), ctx1.stack.peek())

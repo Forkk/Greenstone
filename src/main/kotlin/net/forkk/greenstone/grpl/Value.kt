@@ -96,14 +96,13 @@ sealed class Value(
     }
 
     /** Casts this as a function body. Throws a type error if this isn't a function. */
-    open fun asFun(): List<Statement> {
-        throw TypeError(this, ValueType.FUN)
-    }
+    open fun asFun(): List<Statement> { throw TypeError(this, ValueType.FUN) }
 
     /** Casts this as a string. Throws a type error if this isn't a string. */
-    open fun asString(): String {
-        throw TypeError(this, ValueType.STRING)
-    }
+    open fun asString(): String { throw TypeError(this, ValueType.STRING) }
+
+    /** Casts this as a list. Throws type error if this value isn't a list. */
+    open fun asListOrErr(): List<Value> { throw TypeError(this, ValueType.LIST) }
 
     /** Like `toString`, but shows the "display" representation of the value.
      *
@@ -155,6 +154,7 @@ data class StringVal(val v: String) : Value(ValueType.STRING) {
 @Serializable
 data class ListVal(val lst: List<Value>) : Value(ValueType.LIST) {
     override val length: Int? get() = lst.size
+    override fun asListOrErr(): List<Value> = this.lst
     override fun displayStr(): String = this.lst.toString()
 }
 

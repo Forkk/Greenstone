@@ -26,6 +26,8 @@ class EmptyStackError() : ExecError("Tried to pop empty stack")
 class UnknownCommandError(val name: String) : ExecError("There is no command named $name.")
 class UndefinedNameError(val name: String) : ExecError("Variable name $name is not defined.")
 class ArithmeticError(msg: String = "Invalid arithmetic operation") : ExecError(msg)
+class IndexError(val idx: Int, val range: IntRange) :
+    ExecError("Index $idx out of range ${range.first}, ${range.last}")
 
 // For now just a source location, but this will be used for stack traces later.
 class ErrorTrace {
