@@ -32,6 +32,7 @@ import net.minecraft.util.math.BlockPos
 @Serializable
 data class ComputerSaveData(
     val logs: String = "",
+    val fs: FileSystem = FileSystem(),
     val context: ContextSaveData = ContextSaveData()
 )
 
@@ -87,16 +88,18 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
         }
     }
 
-    private val extraCmds: List<CommandGroup> get() = listOf(ComputerIO(this).ioCommands())
+    private val extraCmds: List<CommandGroup> get() =
+        listOf(ComputerIO(this).ioCommands(), this.fileSystem.fsCommands())
 
     private val openPlayers: ArrayList<PlayerEntity> = arrayListOf()
+    private var fileSystem: FileSystem = FileSystem()
     private var context: Context = Context(this.extraCmds)
     private var logs = ""
     /** The currently running job. Terminal input not allowed unless this is null */
     private var currentJob: Job? = null
 
     private val saveData: ComputerSaveData
-        get() = ComputerSaveData(this.logs, this.context.saveData)
+        get() = ComputerSaveData(this.logs, this.fileSystem, this.context.saveData)
 
     override fun toTag(tag: CompoundTag): CompoundTag {
         ComputerSaveData.serializer().put(this.saveData, inTag = tag)
@@ -106,6 +109,7 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     override fun fromTag(tag: CompoundTag) {
         super.fromTag(tag)
         val data = ComputerSaveData.serializer().getFrom(tag)
+        this.fileSystem = data.fs
         this.logs = data.logs
         this.context = data.context.toContext(this.extraCmds)
     }

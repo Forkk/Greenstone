@@ -28,6 +28,7 @@ class UndefinedNameError(val name: String) : ExecError("Variable name $name is n
 class ArithmeticError(msg: String = "Invalid arithmetic operation") : ExecError(msg)
 class IndexError(val idx: Int, val range: IntRange) :
     ExecError("Index $idx out of range ${range.first}, ${range.last}")
+class FileError(msg: String = "A file IO error occurred") : ExecError(msg)
 
 // For now just a source location, but this will be used for stack traces later.
 class ErrorTrace {

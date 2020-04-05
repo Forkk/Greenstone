@@ -5,6 +5,7 @@ import drawer.put
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import net.forkk.greenstone.computer.ComputerSaveData
+import net.forkk.greenstone.computer.FileSystem
 import net.forkk.greenstone.grpl.Context
 import net.forkk.greenstone.grpl.ContextSaveData
 import net.forkk.greenstone.grpl.GrplParser
@@ -30,8 +31,10 @@ class TestSerialization {
 
     @Test fun `test saving and loading computer save data`() {
         val ctx = Context()
+        val fs = FileSystem()
+        fs.writeFile("test", "foobar")
         ctx.execSync(GrplParser.parse("42 >a 27 >b 13"))
-        val dat = ComputerSaveData("Test logs", ctx.saveData)
+        val dat = ComputerSaveData("Test logs", fs, ctx.saveData)
 
         // Save the data to an NBT tag and then load it again.
         val tag = CompoundTag()
@@ -39,6 +42,8 @@ class TestSerialization {
         val load = ComputerSaveData.serializer().getFrom(tag)
 
         assertEquals("Test logs", load.logs)
+
+        assertEquals("foobar", load.fs.readFile("test"))
 
         // Test that our variables are still set and the stack is in the same state.
         val ctx2 = load.context.toContext()
