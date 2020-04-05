@@ -213,6 +213,61 @@ class TestListcommands : InterpreterTest() {
         )), ctx1.stack.peek())
         assertEquals(1, ctx1.stack.size)
     }
+
+    @Test fun `test list slice`() {
+        val ctx1 = runProgram("newlist 1 2 3 4 tolist 1 4 slice")
+        assertEquals(ListVal(listOf(
+            IntVal(2), IntVal(3), IntVal(4)
+        )), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test list find`() {
+        val ctx1 = runProgram("newlist 1 2 3 4 3 tolist 3 find")
+        assertEquals(IntVal(2), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test list rfind`() {
+        val ctx1 = runProgram("newlist 1 2 3 4 3 tolist 3 rfind")
+        assertEquals(IntVal(4), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test list concat`() {
+        val ctx1 = runProgram("newlist 1 2 3 tolist newlist 2 3 4 tolist concat")
+        assertEquals(ListVal(listOf(
+            IntVal(1), IntVal(2), IntVal(3),
+            IntVal(2), IntVal(3), IntVal(4)
+        )), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+}
+
+class TestStringCommands : InterpreterTest() {
+    @Test fun `test string slice`() {
+        val ctx1 = runProgram("\"Hello\" 1 5 slice")
+        assertEquals(StringVal("ello"), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test string find`() {
+        val ctx1 = runProgram("\"Hello ll\" \"ll\" find")
+        assertEquals(IntVal(2), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test string rfind`() {
+        val ctx1 = runProgram("\"Hello ll\" \"ll\" rfind")
+        assertEquals(IntVal(6), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
+
+    @Test fun `test string concat`() {
+        val ctx1 = runProgram("\"Hello \" \"world\" concat")
+        assertEquals(StringVal("Hello world"), ctx1.stack.peek())
+        assertEquals(1, ctx1.stack.size)
+    }
 }
 
 class TestBoolCommands : InterpreterTest() {

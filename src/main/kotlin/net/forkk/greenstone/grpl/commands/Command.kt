@@ -60,6 +60,7 @@ fun baseCmds(extra: List<CommandGroup> = listOf()): CommandSet {
         CoreCommands,
         MathCommands,
         ListCommands,
+        StringCommands,
         TypeCommands
     )
     extra.forEach { cmdSet.addGroup(it) }
