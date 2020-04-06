@@ -3,7 +3,7 @@
     "id": "greenstone",
     "version": "${version}",
     "name": "Greenstone Circuits",
-    "description": "A computer mod with peripherals and a communication bus.",
+    "description": "A computer mod.",
     "authors": [
     ],
     "license": "MIT",
