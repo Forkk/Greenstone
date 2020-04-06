@@ -5,6 +5,7 @@
     "name": "Greenstone Circuits",
     "description": "A computer mod.",
     "authors": [
+        "Forkk", "AppleTheGolden"
     ],
     "license": "MIT",
     "icon": "assets/greenstone/icon.png",
