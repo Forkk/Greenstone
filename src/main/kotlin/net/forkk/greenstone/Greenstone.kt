@@ -100,7 +100,7 @@ object Greenstone : ModInitializer {
         ServerSidePacketRegistry.INSTANCE.register(
             PACKET_TERMINAL_INPUT
         ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
-            val input = attachedData.readString()
+            val input = attachedData.readString(32767) // There is a *client-side-only* overload for calling this with no arguments; it always calls the main function  with this constant
             packetContext.taskQueue.execute {
                 ComputerBlockEntity.handleInput(packetContext.player, input)
             }
@@ -130,7 +130,7 @@ object Greenstone : ModInitializer {
         ServerSidePacketRegistry.INSTANCE.register(
             PACKET_TERMINAL_EDIT_FILE
         ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
-            val contents = attachedData.readString()
+            val contents = attachedData.readString(32767)
             packetContext.taskQueue.execute {
                 ComputerBlockEntity.handleEdit(packetContext.player, contents)
             }
