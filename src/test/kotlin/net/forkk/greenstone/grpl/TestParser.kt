@@ -92,6 +92,21 @@ class TestParser {
         ))
     }
 
+    @Test fun `test parsing multiline while statement`() {
+        assertParsesTo(
+            "0 >i\nwhile <i 20 lt do\n    42\nend", listOf(
+                LitStmt(IntVal(0), sourceLoc()), StoreVarStmt("i", sourceLoc()),
+                WhileStmt(
+                    listOf(
+                        LoadVarStmt("i", sourceLoc()),
+                        LitStmt(IntVal(20), sourceLoc()),
+                        CommandStmt("lt", sourceLoc())
+                    ),
+                    listOf(LitStmt(IntVal(42), sourceLoc())))
+            )
+        )
+    }
+
     @Test fun `test parsing anonymous function call`() {
         assertParsesTo("@", listOf(CallStmt("", sourceLoc())))
     }

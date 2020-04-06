@@ -3,6 +3,7 @@ package net.forkk.greenstone.computer
 import kotlinx.serialization.Serializable
 import net.forkk.greenstone.grpl.Context
 import net.forkk.greenstone.grpl.FileError
+import net.forkk.greenstone.grpl.GrplParser
 import net.forkk.greenstone.grpl.ListVal
 import net.forkk.greenstone.grpl.StringVal
 import net.forkk.greenstone.grpl.commands.Command
@@ -54,12 +55,26 @@ class FileSystem {
         }
     }
 
-    fun fsCommands(): CommandGroup {
+    fun fsCommands(be: ComputerBlockEntity): CommandGroup {
         return CommandGroup(
             "fs", "Commands for accessing the filesystem.",
             LSCmd(this), RMCmd(this), MVCmd(this),
-            WriteCmd(this), ReadCmd(this)
+            WriteCmd(this), ReadCmd(this),
+            EditCmd(this, be), RunCmd(this)
         )
+    }
+
+    fun getFile(name: String, create: Boolean = true): ComputerFile {
+        val file = files[name]
+        if (file != null) {
+            return file
+        } else if (create) {
+            val f = ComputerFile(name)
+            files[name] = f
+            return f
+        } else {
+            throw FileError("File $name not found")
+        }
     }
 }
 
@@ -129,4 +144,27 @@ class WriteCmd(private val fs: FileSystem) : Command("fwriteall") {
         get() = "Pops a filename and a string, and writes the string to the file with the given filename.\n" +
                 "If the file already exists, it will be overwritten. If it doesn't exist, it will be " +
                 "created."
+}
+
+class RunCmd(private val fs: FileSystem) : Command("run") {
+    override fun exec(ctx: Context) {
+        val name = ctx.stack.pop().asString()
+        val prgm = fs.readFile(name)
+        ctx.execSync(GrplParser.parse(prgm))
+    }
+
+    override val help: String
+        get() = "Pops a filename and executes the GRPL program stored in that file."
+}
+
+class EditCmd(private val fs: FileSystem, private val be: ComputerBlockEntity) : Command("edit") {
+    override fun exec(ctx: Context) {
+        val fname = ctx.stack.pop().asString()
+        be.startEditing(fname)
+    }
+
+    override val help: String
+        get() = "Pops a filename and opens the given file for editing in your OS's default text editor.\n" +
+                "This is done by copying the file contents from the server to a temporary folder on your " +
+                "computer."
 }

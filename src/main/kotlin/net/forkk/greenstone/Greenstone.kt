@@ -1,5 +1,19 @@
 package net.forkk.greenstone
 
+import io.netty.buffer.Unpooled
+import java.io.File
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchKey
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.block.FabricBlockSettings
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback
@@ -19,6 +33,8 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.PacketByteBuf
 import net.minecraft.util.registry.Registry
 import net.minecraft.world.biome.Biome
+
+var watcher: Job? = null
 
 @Suppress("unused")
 object Greenstone : ModInitializer {
@@ -42,6 +58,10 @@ object Greenstone : ModInitializer {
     val PACKET_TERMINAL_OUTPUT = Identifier("greenstone", "packet_terminal_output")
     // Packet for sending screen contents when terminal is opened
     val PACKET_TERMINAL_CONTENTS = Identifier("greenstone", "packet_terminal_contents")
+
+    // Server -> Client and Client -> Server
+    // Sent server->client when user opens a file, and client->server when the user changes it.
+    val PACKET_TERMINAL_EDIT_FILE = Identifier("greenstone", "packet_terminal_edit_file")
 
     override fun onInitialize() {
         Registry.register(Registry.ITEM, Identifier("greenstone", "greenstone_dust"), GREENSTONE_DUST)
@@ -107,6 +127,14 @@ object Greenstone : ModInitializer {
                 ComputerBlockEntity.handleInterrupt(packetContext.player)
             }
         }
+        ServerSidePacketRegistry.INSTANCE.register(
+            PACKET_TERMINAL_EDIT_FILE
+        ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+            val contents = attachedData.readString()
+            packetContext.taskQueue.execute {
+                ComputerBlockEntity.handleEdit(packetContext.player, contents)
+            }
+        }
     }
 }
 
@@ -134,4 +162,85 @@ fun clientInit() {
             }
         }
     }
+    ClientSidePacketRegistry.INSTANCE.register(
+        Greenstone.PACKET_TERMINAL_EDIT_FILE
+    ) { packetContext: PacketContext, attachedData: PacketByteBuf ->
+        val content = attachedData.readString()
+        packetContext.taskQueue.execute {
+            val screen = MinecraftClient.getInstance().currentScreen
+            if (screen != null && screen is ComputerScreen) {
+                startEditing(content)
+            }
+        }
+    }
+}
+
+/**
+ * Writes the given file contents to a temporary file and starts the user's text editor to edit the file.
+ */
+private fun startEditing(content: String) {
+    val temp = File.createTempFile("editing", ".txt")
+    temp.writeText(content)
+
+    val path = Paths.get(temp.absolutePath)
+    watcher?.cancel()
+    watcher = GlobalScope.launch { watchFile(path) }
+
+    openInEditor(temp)
+}
+
+private fun openInEditor(file: File) {
+    // This is probably better but it seems to block.
+    // Util.getOperatingSystem().open(file)
+    val cmd = if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+        "start " + file.canonicalPath
+    } else if (System.getProperty("os.name").toLowerCase().contains("macos")) {
+        "open " + file.canonicalPath
+    } else {
+        "xdg-open " + file.canonicalPath
+    }
+    Runtime.getRuntime().exec(cmd)
+}
+
+private suspend fun watchFile(path: Path) {
+    val watchService = withContext(Dispatchers.IO) {
+        val w = FileSystems.getDefault()!!.newWatchService()!!
+        path.parent.register(w, StandardWatchEventKinds.ENTRY_MODIFY)
+        w
+    }
+
+    try {
+        var key: WatchKey? = null
+        while (true) {
+            key = watchService.poll()
+            if (key != null) {
+                val events = key.pollEvents()
+                for (ev in events) {
+                    if (ev.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
+                        val edited = ev.context() as Path
+                        if (path.endsWith(edited)) {
+                            sendEditedFile(path.toFile().readText())
+                        }
+                    }
+                }
+                key.reset()
+            }
+            try {
+                delay(100)
+            } catch (_: CancellationException) {
+                break
+            }
+        }
+    } finally {
+        withContext(Dispatchers.IO) { watchService.close() }
+    }
+}
+
+/**
+ * Sends an edited file's contents to the server.
+ */
+private fun sendEditedFile(content: String) {
+    val packetBuf = PacketByteBuf(Unpooled.buffer())
+    packetBuf.writeString(content)
+    ClientSidePacketRegistry.INSTANCE.sendToServer(Greenstone.PACKET_TERMINAL_EDIT_FILE, packetBuf)
 }

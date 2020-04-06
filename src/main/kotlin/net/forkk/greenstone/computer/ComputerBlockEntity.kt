@@ -48,6 +48,8 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
          * Keeps track of who has what terminal open.
          */
         private val openTerminalMap = hashMapOf<PlayerEntity, ComputerBlockEntity>()
+        /** Map of players to editing files */
+        private val openFileMap = hashMapOf<PlayerEntity, ComputerFile>()
 
         fun handleGuiOpen(player: PlayerEntity, pos: BlockPos) {
             val be = player.world.getBlockEntity(pos)
@@ -66,30 +68,41 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
         fun handleGuiClose(player: PlayerEntity) {
             val be = openTerminalMap[player] ?: return
             be.openPlayers.remove(player)
+            openFileMap.remove(player)
             openTerminalMap.remove(player)
         }
 
         fun handleInput(player: PlayerEntity, input: String) {
             val block = openTerminalMap[player]
             if (block == null) {
-                error("Player sent input to a terminal, but they are not registered with one.")
+                error("Player ${player.nameAndUuid} sent input to a terminal, but they are not registered with one.")
             } else {
-                block.onTerminalInput(input)
+                block.onTerminalInput(input, player)
             }
         }
 
         fun handleInterrupt(player: PlayerEntity) {
             val block = openTerminalMap[player]
             if (block == null) {
-                error("Player sent interrupt to a terminal, but they are not registered with one.")
+                error("Player ${player.nameAndUuid} sent interrupt to a terminal, but they are not registered with one.")
             } else {
                 block.interruptProgram()
+            }
+        }
+
+        /** Called when a player saves changes to a file. */
+        fun handleEdit(player: PlayerEntity, content: String) {
+            val file = openFileMap[player]
+            if (file != null) {
+                file.contents = content
+            } else {
+                error("Player ${player.nameAndUuid} sent edit changes, but they are not registered with any files.")
             }
         }
     }
 
     private val extraCmds: List<CommandGroup> get() =
-        listOf(ComputerIO(this).ioCommands(), this.fileSystem.fsCommands())
+        listOf(ComputerIO(this).ioCommands(), this.fileSystem.fsCommands(this))
 
     private val openPlayers: ArrayList<PlayerEntity> = arrayListOf()
     private var fileSystem: FileSystem = FileSystem()
@@ -97,6 +110,8 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     private var logs = ""
     /** The currently running job. Terminal input not allowed unless this is null */
     private var currentJob: Job? = null
+    /** The player that started the current job. */
+    private var jobPlayer: PlayerEntity? = null
 
     private val saveData: ComputerSaveData
         get() = ComputerSaveData(this.logs, this.fileSystem, this.context.saveData)
@@ -117,10 +132,10 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     /**
      * Called when the player types input into this terminal.
      */
-    private fun onTerminalInput(input: String) {
+    private fun onTerminalInput(input: String, player: PlayerEntity) {
         if (currentJob?.isActive != true) {
             printToTerminal(">$input\n")
-            startJob(input)
+            startJob(input, player)
         }
     }
 
@@ -136,7 +151,8 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
     /**
      * Starts executing a user's input asynchronously. Further input is blocked until this completes.
      */
-    private fun startJob(input: String) {
+    private fun startJob(input: String, player: PlayerEntity) {
+        jobPlayer = player
         currentJob = GlobalScope.launch {
             try {
                 context.exec(GrplParser.parse(input))
@@ -150,6 +166,7 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
                 world!!.server!!.execute {
                     markDirty()
                     currentJob = null
+                    jobPlayer = null
                 }
             }
         }
@@ -192,6 +209,23 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
             passedData.writeString(this.logs)
             ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_CONTENTS, passedData)
         }
+    }
+
+    /**
+     * Server-side only. Sends the contents of a file to the player who input the currently running command.
+     *
+     * This should *only* be called from the `EditCmd` during the execution of a program.
+     */
+    fun startEditing(fname: String) {
+        if (world!!.isClient) { error("Called startEditing on clientside") }
+        val player = this.jobPlayer ?: error("Called startEditing while edit command is not running.")
+        val file = fileSystem.getFile(fname, create = true)
+
+        val passedData = PacketByteBuf(Unpooled.buffer())
+        passedData.writeString(file.contents)
+        ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, Greenstone.PACKET_TERMINAL_EDIT_FILE, passedData)
+
+        openFileMap[player] = file
     }
 
     /**
