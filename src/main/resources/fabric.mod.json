@@ -6,7 +6,7 @@
     "description": "A computer mod with peripherals and a communication bus.",
     "authors": [
     ],
-    "license": "ARR",
+    "license": "MIT",
     "icon": "assets/greenstone/icon.png",
     "environment": "*",
     "entrypoints": {
