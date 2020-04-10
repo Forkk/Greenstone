@@ -36,6 +36,8 @@ data class ComputerSaveData(
     val context: ContextSaveData = ContextSaveData()
 )
 
+const val MAX_SCROLLBACK_BUFFER_LENGTH = 32767 // 2^15 - 1
+
 class ComputerBlockEntity : BlockEntity(TYPE) {
     companion object {
         val TYPE: BlockEntityType<ComputerBlockEntity> = // Is this correct? idk, I copied it from Stockpile
@@ -176,6 +178,10 @@ class ComputerBlockEntity : BlockEntity(TYPE) {
      * Prints a string to the terminal and alerts all clients with the GUI open.
      */
     fun printToTerminal(str: String) {
+        if (logs.length + str.length > MAX_SCROLLBACK_BUFFER_LENGTH) {
+            logs = logs.drop(str.length)
+        }
+
         logs += str
         openPlayers.forEach { player ->
             val passedData = PacketByteBuf(Unpooled.buffer())
